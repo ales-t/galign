@@ -12,12 +12,6 @@ using namespace boost;
 using namespace boost::iostreams;
 using namespace boost::algorithm;
 
-Corpus::Corpus()
-{
-  filtering_istream *in = InitInput();
-  Read(*in);
-}
-
 Corpus::Corpus(const string &fileName)
 {
   filtering_istream *in = InitInput(fileName);
@@ -47,7 +41,8 @@ void Corpus::Read(filtering_istream &in)
 
     for (size_t i = 0; i < sentence->src.size(); i++) {
       sourceTypes.insert(sentence->src[i]);
-      tokensToSentences.insert(make_pair(totalSourceTokens++, make_pair(lineNum - 1, i))); // 0-based
+      tokensToSentences.insert(make_pair(totalSourceTokens++,
+          make_pair(lineNum - 1, i))); // 0-based
     }
     sentences.push_back(sentence);
   }

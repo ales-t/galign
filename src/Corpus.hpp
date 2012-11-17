@@ -21,7 +21,7 @@ struct Sentence
 class Corpus
 {
 public:
-  Corpus(); // default ctor reads from stdin
+  // filename can be empty, corpus is then read from stdin
   Corpus(const std::string &fileName);
 
   std::vector<Sentence *> &GetSentences() { return sentences; }
