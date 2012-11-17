@@ -3,7 +3,7 @@ OBJDIR = bin
 SRCDIR = src
 
 CXX_FLAGS = -O3 -I$(BOOST_PATH)/include/
-LD_FLAGS = -static -L$(BOOST_PATH)/lib/ -lz -lboost_program_options -lboost_iostreams
+LD_FLAGS = -static -L$(BOOST_PATH)/lib/ -lboost_program_options -lboost_iostreams -lz
 
 all: $(OBJDIR)/wordalign
 
