@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   opts.ParseOptions(argc, argv);
 
   // load corpus
-  Corpus *corpus = new Corpus(opts->GetInputFileName());
+  Corpus *corpus = new Corpus(opts.GetInputFile());
   Log("Corpus loaded.");
 
   // initialize IBM Model 1
