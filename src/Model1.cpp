@@ -83,3 +83,33 @@ void Model1::RunIteration(bool doAggregate)
     }
   }
 }
+
+vector<AlignmentType> Model1::GetAggregateAlignment()
+{
+  vector<AlignmentType> out;
+  BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
+    AlignmentType aggregAlign(sentence->src.size());
+    for (int i = 0; i < sentence->src.size(); i++) {
+      int best = -1;
+      float bestProb = 0;
+      for (int j = 0; j < sentence->tgt.size(); j++) {
+        float pairAlpha = alpha;
+        float normAlpha = alpha * corpus->GetSrcTypes().size();
+        if (sentence->src[i] == sentence->tgt[j])
+          pairAlpha = cognateAlpha;
+        if (hasCognate.find(sentence->tgt[j]) != hasCognate.end())
+          normAlpha += cognateAlpha - alpha;
+
+        float prob = (aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
+          / (aggregateCounts[sentence->tgt[j]] + normAlpha);
+        if (prob > bestProb) {
+          best = j;
+          bestProb = prob;
+        }      
+      }
+      aggregAlign[i] = best;
+    }
+    out.push_back(aggregAlign);
+  }
+  return out;
+}

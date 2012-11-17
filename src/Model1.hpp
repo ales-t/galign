@@ -11,6 +11,9 @@
 
 #include "Corpus.hpp"
 
+typedef boost::unordered_map<std::string, boost::unordered_map<std::string, int> > JointCountType;
+typedef boost::unordered_map<std::string, int> CountType;
+
 class Model1
 {
 public:
@@ -18,12 +21,13 @@ public:
     corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha) {}
   void AlignRandomly();
   void RunIteration(bool doAggregate);
-
+  std::vector<AlignmentType> GetAggregateAlignment();
+  
 private:
   boost::random::mt19937 generator;
   Corpus *corpus;
-  boost::unordered_map<std::string, boost::unordered_map<std::string, int> > jointCounts, aggregateJoint; 
-  boost::unordered_map<std::string, int> counts, aggregateCounts;
+  JointCountType jointCounts, aggregateJoint; 
+  CountType counts, aggregateCounts;
   boost::unordered_set<std::string> hasCognate;
   float alpha, cognateAlpha;
 };

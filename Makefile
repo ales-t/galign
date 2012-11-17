@@ -1,19 +1,17 @@
-BOOST_PATH = /home/ales/boost/
+BOOST_PATH = /home/ales/boost
+OBJDIR = bin
+SRCDIR = src
 
-CXX_FLAGS = -O3 -I$(BOOST_PATH)/include/ -L$(BOOST_PATH)/lib/
+CXX_FLAGS = -O3 -I$(BOOST_PATH)/include/
 
-.SECONDARY:
-
-all: build/wordalign
-
-build:
-	mkdir -p build
+all: $(OBJDIR)/wordalign
 
 clean:
-	rm -rf build
+	rm -rf $(OBJDIR)
 
-build/wordalign: src/wordalign.cpp build/Corpus.o build/Model1.o build/Options.o
+$(OBJDIR)/wordalign: $(SRCDIR)/wordalign.cpp $(OBJDIR)/Corpus.o $(OBJDIR)/Model1.o $(OBJDIR)/Options.o $(OBJDIR)/Writer.o $(OBJDIR)/Utils.o
 	$(CXX) $(CXX_FLAGS) $^ -lz $(BOOST_PATH)/lib/libboost_program_options.a $(BOOST_PATH)/lib/libboost_iostreams.a -o $@
 
-build/%.o: src/%.cpp build
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<

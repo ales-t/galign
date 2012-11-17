@@ -2,11 +2,8 @@
 #include "Utils.hpp"
 
 #include <boost/iostreams/filtering_stream.hpp> 
-#include <boost/iostreams/filter/gzip.hpp> 
-#include <boost/iostreams/device/file.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -17,22 +14,16 @@ using namespace boost::algorithm;
 
 Corpus::Corpus()
 {
-  filtering_istream in;
-  in.push(cin);
-  Read(in);
+  filtering_istream *in = InitInput();
+  Read(*in);
 }
 
 Corpus::Corpus(const string &fileName)
 {
-  filtering_istream in;
-  if (ends_with(fileName, ".gz")) {
-    in.push(gzip_decompressor());
-  }
-  in.push(file_source(fileName.c_str()));
-  if (! in.good())
+  filtering_istream *in = InitInput(fileName);
+  if (! in->good())
     Die("Cannot read input file: " + fileName);
-
-  Read(in);
+  Read(*in);
 }
 
 void Corpus::Read(filtering_istream &in)
