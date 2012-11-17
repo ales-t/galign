@@ -7,9 +7,10 @@
 class Options
 {
 public:
-  static Options* Instance()
+  static Options &Instance()
   {
-    if (! instance) instance = new Options();
+    static Options instance;
+    return instance;
   }
   void ParseOptions(int argc, char **argv);
 
@@ -18,16 +19,16 @@ public:
   float GetAlpha()              { return alpha; }
   float GetCognateAlpha()       { return alpha * cognateBoost; }
   std::string GetOutputPrefix() { return outputPrefix; }
+  std::string GetInputFile()    { return inputFile; }
 
 private:
   Options() {}
-  Options(Options const &) {}
-  Options &operator=(Options const &) {}
+  Options(Options const &);
+  Options &operator=(Options const &);
 
-  static Options *instance;
   int iterations, aggregateAfter;
   float alpha, cognateBoost;
-  std::string outputPrefix;
+  std::string outputPrefix, inputFile;
 };
 
 #endif // OPTIONS_HPP_

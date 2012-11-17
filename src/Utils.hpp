@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 inline void Warn(const std::string &msg)
 {

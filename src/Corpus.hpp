@@ -6,6 +6,8 @@
 #include <vector>
 
 #include <boost/iostreams/filtering_stream.hpp> 
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 typedef std::vector<int> AlignmentType;
 
@@ -23,14 +25,17 @@ public:
   Corpus(const std::string &fileName);
 
   std::vector<Sentence *> &GetSentences() { return sentences; }
-  pair<int, int> GetSentenceAndPosition(int positionInCorpus);
+  std::pair<int, int> GetSentenceAndPosition(int positionInCorpus);
+  const boost::unordered_set<std::string> &GetSrcTypes() { return sourceTypes; }
+  int GetTotalSourceTokens() { return totalSourceTokens; }
 
 private:
   void Read(boost::iostreams::filtering_istream &in);
 
   std::vector<Sentence *> sentences;
   boost::unordered_map<int, std::pair<int, int> > tokensToSentences;
-  boost::unordered_set<std::string> srcTypes;
+  boost::unordered_set<std::string> sourceTypes;
+  int totalSourceTokens;
 };
 
 #endif // CORPUS_HPP_
