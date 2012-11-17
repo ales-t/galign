@@ -30,7 +30,7 @@ void Corpus::Read(filtering_istream &in)
 {
   string line;
   int lineNum = 0;
-  int totalTokens = 0;
+  totalSourceTokens = 0;
   while (getline(in, line)) {
     lineNum++;
     vector<string> sides;
@@ -59,7 +59,8 @@ pair<int, int> Corpus::GetSentenceAndPosition(int positionInCorpus)
   boost::unordered_map<int, std::pair<int, int> >::const_iterator it;
   it = tokensToSentences.find(positionInCorpus);
   if (it == tokensToSentences.end()) {
-    Die("Requested word beyond corpus size: " + lexical_cast<string>(positionInCorpus));
+    Die("Requested position " + lexical_cast<string>(positionInCorpus)
+        + " beyond corpus size " + lexical_cast<string>(totalSourceTokens));
   } else {
     return it->second;
   }
