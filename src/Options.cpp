@@ -25,6 +25,8 @@ void Options::ParseOptions(int argc, char **argv)
      "Value of the uniform Dirichlet prior.")    
     ("input-file,i", value<string>(&inputFile)->default_value(""),
      "Input file, default is STDIN.")
+    ("help,h", value<bool>(&help)->zero_tokens()->default_value(false),
+     "Print this message.")
     ("compress,c", value(&compress)->zero_tokens()->default_value(false),
      "Gzip output files.");
   try {
@@ -34,5 +36,9 @@ void Options::ParseOptions(int argc, char **argv)
   } catch (...) {
     std::cerr << opts << std::endl;
     Die("Wrong command-line arguments");
+  }
+  if (help) {
+    std::cerr << opts << std::endl;
+    exit(0);
   }
 }

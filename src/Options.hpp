@@ -14,7 +14,8 @@ public:
   }
   void ParseOptions(int argc, char **argv);
 
-  int GetCompress()             { return compress; }
+  bool GetHelp()                { return help; }
+  bool GetCompress()            { return compress; }
   int GetIterations()           { return iterations; }
   int GetAggregateAfter()       { return aggregateAfter; }
   float GetAlpha()              { return alpha; }
@@ -30,7 +31,7 @@ private:
   int iterations, aggregateAfter;
   float alpha, cognateBoost;
   std::string outputPrefix, inputFile;
-  bool compress;
+  bool compress, help;
 };
 
 #endif // OPTIONS_HPP_
