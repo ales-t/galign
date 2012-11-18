@@ -10,6 +10,7 @@
 #include "Model1.hpp"
 #include "Writer.hpp"
 #include "Utils.hpp"
+#include "HMM.hpp"
 
 using namespace std;
 
@@ -30,7 +31,16 @@ int main(int argc, char **argv)
   // run model iterations
   for (int i = 0; i < opts.GetIterations(); i++) {
     model1.RunIteration(i > opts.GetAggregateAfter());
-    Log("Finished iteration " + boost::lexical_cast<string>(i));
+    Log("Model1: Finished iteration " + boost::lexical_cast<string>(i));
+  }
+
+  HMM hmmModel(corpus, opts.GetAlpha(), opts.GetCognateAlpha(), model1.GetCounts(),
+      model1.GetJointCounts());
+
+  // run model iterations
+  for (int i = 0; i < opts.GetIterations(); i++) {
+    hmmModel.RunIteration(i > opts.GetAggregateAfter());
+    Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
   }
 
   // output last alignment and aggregate alignment
@@ -39,7 +49,7 @@ int main(int argc, char **argv)
   string suffix = opts.GetCompress() ? ".gz" : "";
   writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
-      + suffix, model1.GetAggregateAlignment());
+      + suffix, hmmModel.GetAggregateAlignment());
   Log("Done.");
 
   return 0;

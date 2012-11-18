@@ -1,5 +1,5 @@
-#ifndef MODEL1_HPP_
-#define MODEL1_HPP_
+#ifndef HMM_HPP_
+#define HMM_HPP_
 
 #include <algorithm>
 #include <string>
@@ -10,28 +10,26 @@
 #include <boost/unordered_set.hpp>
 
 #include "Corpus.hpp"
+#include "Model1.hpp"
 
-typedef boost::unordered_map<std::string, boost::unordered_map<std::string, int> > JointCountType;
-typedef boost::unordered_map<std::string, int> CountType;
+typedef boost::unordered_map<int, int> DistortionCountType;
 
-class Model1
+class HMM
 {
 public:
-  Model1(Corpus *corpus, float alpha, float cognateAlpha) :
-    corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha) {}
-  void AlignRandomly();
+  HMM(Corpus *corpus, float alpha, float cognateAlpha, const CountType &prevCounts,
+      const JointCountType &prevJoint); 
   void RunIteration(bool doAggregate);
   std::vector<AlignmentType> GetAggregateAlignment();
   
-  const CountType &GetCounts()           { return counts; }
-  const JointCountType &GetJointCounts() { return jointCounts; }
 private:
   boost::random::mt19937 generator;
   Corpus *corpus;
   JointCountType jointCounts, aggregateJoint; 
   CountType counts, aggregateCounts;
+  DistortionCountType distortionCounts, aggregateDistortion;
   boost::unordered_set<std::string> hasCognate;
   float alpha, cognateAlpha;
 };
 
-#endif // MODEL1_HPP_
+#endif // HMM_HPP_
