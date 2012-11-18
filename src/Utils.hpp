@@ -33,7 +33,7 @@ class LogDistribution
 public:
   LogDistribution() 
   {
-    maxProb = std::numeric_limits<float>::min();
+    maxProb = -std::numeric_limits<float>::infinity();
   }
 
   void Add(float logProb)
@@ -49,6 +49,7 @@ public:
     BOOST_FOREACH(float logProb, logProbs) {
       out.push_back(exp(logProb));
     }
+    return out;
   }
 
   float operator[] (int pos) { return logProbs[pos]; }

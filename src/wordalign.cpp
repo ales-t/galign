@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   Log("Corpus loaded.");
 
   // initialize IBM Model 1
-  Model1 model1(corpus, opts.GetAlpha(), opts.GetCognateAlpha());
+  Model1 model1(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha());
   model1.AlignRandomly();
   Log("Initialized Model1");
 
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
   }
 
   // initialize HMM model, use counts from IBM Model 1
-  HMM hmmModel(corpus, opts.GetAlpha(), opts.GetCognateAlpha(), model1.GetCounts(),
-      model1.GetJointCounts());
+  HMM hmmModel(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha(),
+      opts.GetDistortionAlpha(), model1.GetCounts(), model1.GetJointCounts());
   Log("Initialized HMM");
 
   // run HMM model iterations

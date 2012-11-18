@@ -17,7 +17,7 @@ typedef boost::unordered_map<int, int> DistortionCountType;
 class HMM
 {
 public:
-  HMM(Corpus *corpus, float alpha, float cognateAlpha, const CountType &prevCounts,
+  HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
   void RunIteration(bool doAggregate);
   std::vector<AlignmentType> GetAggregateAlignment();
@@ -28,7 +28,7 @@ private:
   JointCountType jointCounts, aggregateJoint; 
   CountType counts, aggregateCounts;
   DistortionCountType distortionCounts, aggregateDistortion;
-  float alpha, cognateAlpha;
+  float alpha, cognateAlpha, distAlpha;
 };
 
 #endif // HMM_HPP_

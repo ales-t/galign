@@ -60,7 +60,6 @@ pair<int, int> Corpus::GetSentenceAndPosition(int positionInCorpus)
   if (it == tokensToSentences.end()) {
     Die("Requested position " + lexical_cast<string>(positionInCorpus)
         + " beyond corpus size " + lexical_cast<string>(totalSourceTokens));
-  } else {
-    return it->second;
   }
+  return it->second;
 }

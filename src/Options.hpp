@@ -18,8 +18,9 @@ public:
   bool GetCompress()            { return compress; }
   int GetIterations()           { return iterations; }
   int GetAggregateFrom()        { return aggregateFrom; }
-  float GetAlpha()              { return alpha; }
-  float GetCognateAlpha()       { return alpha * cognateBoost; }
+  float GetLexicalAlpha()       { return alphaLex; }
+  float GetDistortionAlpha()    { return alphaDist; }
+  float GetCognateAlpha()       { return alphaLex * cognateBoost; }
   std::string GetOutputPrefix() { return outputPrefix; }
   std::string GetInputFile()    { return inputFile; }
 
@@ -29,7 +30,7 @@ private:
   Options &operator=(Options const &);
 
   int iterations, aggregateFrom;
-  float alpha, cognateBoost;
+  float alphaLex, alphaDist, cognateBoost;
   std::string outputPrefix, inputFile;
   bool compress, help;
 };

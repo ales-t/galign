@@ -43,8 +43,8 @@ void Model1::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  for (size_t i = 0; i < order.size(); i++) {
-    int position = order[i];
+  for (size_t posIt = 0; posIt < order.size(); posIt++) {
+    int position = order[posIt];
     pair<int, int> sentPos = corpus->GetSentenceAndPosition(position);
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
@@ -86,11 +86,13 @@ void Model1::RunIteration(bool doAggregate)
 vector<AlignmentType> Model1::GetAggregateAlignment()
 {
   vector<AlignmentType> out;
+  int lineNum = 0;
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
+    lineNum++;
     AlignmentType aggregAlign(sentence->src.size());
     for (int i = 0; i < sentence->src.size(); i++) {
       int best = -1;
-      float bestProb = numeric_limits<float>::min();
+      float bestProb = -numeric_limits<float>::infinity();
       for (int j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
         float normAlpha = alpha * corpus->GetSrcTypes().size();
@@ -105,6 +107,10 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
           best = j;
           bestProb = logProb;
         }      
+      }
+      if (best == -1) {
+        Die("Zero probability for word '" + sentence->src[i] +
+            "' in sentence " + lexical_cast<string>(lineNum));
       }
       aggregAlign[i] = best;
     }
