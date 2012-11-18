@@ -12,14 +12,15 @@ class Writer
 {
 public:
   Writer(Corpus *corpus) : corpus(corpus) {}
-  void WriteAlignment(const std::string &fileName);
-  void WriteAlignment(const std::string &fileName, const std::vector<AlignmentType> &align);
+  void WriteAlignment(const std::string &fileName, bool gizaFormat = false);
+  void WriteAlignment(const std::string &fileName, const std::vector<AlignmentType> &align,
+      bool gizaFormat = false);
 
 private:
   void WriteAlignmentLine(boost::iostreams::filtering_ostream &out,
       const std::vector<std::string> &src,
       const std::vector<std::string> &tgt,
-      const AlignmentType &align);
+      const AlignmentType &align, bool gizaFormat);
 
   Corpus *corpus;
 };

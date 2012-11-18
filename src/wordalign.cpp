@@ -51,6 +51,8 @@ int main(int argc, char **argv)
   Writer writer(corpus);
   string suffix = opts.GetCompress() ? ".gz" : "";
   writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
+  writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate.giza"
+      + suffix, hmmModel.GetAggregateAlignment(), true);
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
       + suffix, hmmModel.GetAggregateAlignment());
   Log("Done.");
