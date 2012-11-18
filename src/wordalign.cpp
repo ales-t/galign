@@ -34,11 +34,13 @@ int main(int argc, char **argv)
   }
 
   // output last alignment and aggregate alignment
+  Log("Writing alignments to disk.");
   Writer writer(corpus);
   string suffix = opts.GetCompress() ? ".gz" : "";
   writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
       + suffix, model1.GetAggregateAlignment());
+  Log("Done.");
 
   return 0;
 }

@@ -6,6 +6,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
+#include <omp.h>
 
 using namespace std;
 using namespace boost;
@@ -46,6 +47,8 @@ void Model1::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
+  int cores = omp_get_num_procs();
+  omp_set_num_threads(min(cores, 6));
   #pragma omp parallel for
   for (size_t i = 0; i < order.size(); i++) {
     int position = order[i];
