@@ -28,7 +28,7 @@ void Writer::WriteAlignment(const std::string &fileName, const vector<AlignmentT
 void Writer::WriteAlignmentLine(filtering_ostream &out, const std::vector<std::string> &src,
   const std::vector<std::string> &tgt, const AlignmentType &align)
 {
-  for (int i = 0; i < src.size(); i++) {
+  for (size_t i = 0; i < src.size(); i++) {
     out << src[i] << "{" << tgt[align[i]] << "}";
     if (i != src.size() - 1)
       out << " ";

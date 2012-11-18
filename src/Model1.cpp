@@ -22,12 +22,12 @@ void Model1::AlignRandomly()
 
     // align and collect counts
     uniform_int_distribution<int> dist(0, sentence->tgt.size() - 1);
-    for (int i = 0; i < sentence->src.size(); i++) {
+    for (size_t i = 0; i < sentence->src.size(); i++) {
       int tgtWord = dist(generator);
       jointCounts[sentence->src[i]][sentence->tgt[tgtWord]]++;
       sentence->align.push_back(tgtWord);
     }
-    for (int i = 0; i < sentence->tgt.size(); i++)
+    for (size_t i = 0; i < sentence->tgt.size(); i++)
       counts[sentence->tgt[i]]++;
   }
 }
@@ -36,7 +36,7 @@ void Model1::RunIteration(bool doAggregate)
 {
   vector<int> order;
   order.reserve(corpus->GetTotalSourceTokens());
-  for (int i = 0; i < corpus->GetTotalSourceTokens(); i++)
+  for (size_t i = 0; i < corpus->GetTotalSourceTokens(); i++)
     order.push_back(i);
 
   vector<Sentence *> &sentences = corpus->GetSentences();
@@ -90,10 +90,10 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     lineNum++;
     AlignmentType aggregAlign(sentence->src.size());
-    for (int i = 0; i < sentence->src.size(); i++) {
+    for (size_t i = 0; i < sentence->src.size(); i++) {
       int best = -1;
       float bestProb = -numeric_limits<float>::infinity();
-      for (int j = 0; j < sentence->tgt.size(); j++) {
+      for (size_t j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
         float normAlpha = alpha * corpus->GetSrcTypes().size();
         if (sentence->src[i] == sentence->tgt[j])

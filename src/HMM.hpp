@@ -25,10 +25,10 @@ public:
 private:
   boost::random::mt19937 generator;
   Corpus *corpus;
-  JointCountType jointCounts, aggregateJoint; 
-  CountType counts, aggregateCounts;
-  DistortionCountType distortionCounts, aggregateDistortion;
   float alpha, cognateAlpha, distAlpha;
+  CountType counts, aggregateCounts;
+  JointCountType jointCounts, aggregateJoint; 
+  DistortionCountType distortionCounts, aggregateDistortion;
 };
 
 #endif // HMM_HPP_

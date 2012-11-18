@@ -43,7 +43,7 @@ void Corpus::Read(filtering_istream &in)
       sourceTypes.insert(sentence->src[i]);
       tokensToSentences.insert(make_pair(totalSourceTokens++,
           make_pair(lineNum - 1, i))); // 0-based
-      for (int j = 0; j < sentence->tgt.size(); j++) {
+      for (size_t j = 0; j < sentence->tgt.size(); j++) {
         if (sentence->tgt[j] == sentence->src[i])
           cognates.insert(sentence->tgt[j]);
       }

@@ -15,15 +15,15 @@ void Options::ParseOptions(int argc, char **argv)
   opts.add_options()
     ("output-prefix,o", value<string>(&outputPrefix)->default_value("align"),
      "Prefix of created output files.")
-    ("aggregate-from,g", value<int>(&aggregateFrom)->default_value(10),
+    ("aggregate-from,g", value<size_t>(&aggregateFrom)->default_value(10),
      "Iteration from which samples are aggregated for the final word alignment.")
-    ("iterations,t", value<int>(&iterations)->default_value(20),
+    ("iterations,t", value<size_t>(&iterations)->default_value(20),
      "Number of iterations.")
     ("cognate-boost,b", value<float>(&cognateBoost)->default_value(1),
      "Prior co-efficient for cognate words (higher number implies stronger prior).")
     ("alpha-lex,a", value<float>(&alphaLex)->default_value(0.01),
      "Value of the uniform Dirichlet prior on lexical probability.")    
-    ("alpha-dist,a", value<float>(&alphaDist)->default_value(0.5),
+    ("alpha-dist,a", value<float>(&alphaDist)->default_value(1),
      "Value of the uniform Dirichlet prior on distortion probability.")    
     ("input-file,i", value<string>(&inputFile)->default_value(""),
      "Input file, default is STDIN.")

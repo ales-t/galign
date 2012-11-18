@@ -27,7 +27,7 @@ public:
   std::vector<Sentence *> &GetSentences() { return sentences; }
   std::pair<int, int> GetSentenceAndPosition(int positionInCorpus);
   const boost::unordered_set<std::string> &GetSrcTypes() { return sourceTypes; }
-  int GetTotalSourceTokens() { return totalSourceTokens; }
+  size_t GetTotalSourceTokens() { return totalSourceTokens; }
   bool HasCognate(const std::string &word) { return cognates.find(word) != cognates.end(); }
 
 private:
@@ -37,7 +37,7 @@ private:
   boost::unordered_map<int, std::pair<int, int> > tokensToSentences;
   boost::unordered_set<std::string> sourceTypes;
   boost::unordered_set<std::string> cognates;
-  int totalSourceTokens;
+  size_t totalSourceTokens;
 };
 
 #endif // CORPUS_HPP_

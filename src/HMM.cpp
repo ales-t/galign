@@ -18,7 +18,7 @@ HMM::HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
-    for (int i = 0; i < sentence->src.size(); i++) {
+    for (size_t i = 0; i < sentence->src.size(); i++) {
       int distortion = 1;
       if (i > 0)
         distortion = sentence->align[i] - sentence->align[i - 1];
@@ -31,7 +31,7 @@ void HMM::RunIteration(bool doAggregate)
 {
   vector<int> order;
   order.reserve(corpus->GetTotalSourceTokens());
-  for (int i = 0; i < corpus->GetTotalSourceTokens(); i++)
+  for (size_t i = 0; i < corpus->GetTotalSourceTokens(); i++)
     order.push_back(i);
 
   vector<Sentence *> &sentences = corpus->GetSentences();
@@ -58,7 +58,7 @@ void HMM::RunIteration(bool doAggregate)
     LogDistribution lexicalProbs;
     LogDistribution distortionPotentials;
 
-    for (int i = 0; i < sentence->tgt.size(); i++) {
+    for (size_t i = 0; i < sentence->tgt.size(); i++) {
       const string &tgt = sentence->tgt[i];
       float pairAlpha = alpha;
       float normAlpha = alpha * corpus->GetSrcTypes().size();
@@ -76,7 +76,8 @@ void HMM::RunIteration(bool doAggregate)
       int distCount = 0;
       if (distortionCounts.find(distortion) != distortionCounts.end())
         distCount = distortionCounts[distortion];
-      distortionPotentials.Add(log(distCount + distAlpha));
+      distortionPotentials.Add(log(distCount + distAlpha)
+          - log(corpus->GetTotalSourceTokens() + sentence->tgt.size()*distAlpha));
     }
 
     // get distribution parameters
@@ -84,7 +85,7 @@ void HMM::RunIteration(bool doAggregate)
     distParams.reserve(sentence->tgt.size());
     lexicalProbs.Normalize();
     distortionPotentials.Normalize();
-    for (int i = 0; i < sentence->tgt.size(); i++) {
+    for (size_t i = 0; i < sentence->tgt.size(); i++) {
       distParams.push_back(exp(lexicalProbs[i] + distortionPotentials[i]));
     }
 
@@ -118,11 +119,11 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     lineNum++;
     AlignmentType aggregAlign(sentence->src.size());
-    for (int i = 0; i < sentence->src.size(); i++) {
+    for (size_t i = 0; i < sentence->src.size(); i++) {
       LogDistribution lexicalProbs;
       LogDistribution distortionPotentials;
 
-      for (int j = 0; j < sentence->tgt.size(); j++) {
+      for (size_t j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
         float normAlpha = alpha * corpus->GetSrcTypes().size();
         if (sentence->src[i] == sentence->tgt[j])
@@ -141,14 +142,15 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
         int distCount = 0;
         if (aggregateDistortion.find(distortion) != aggregateDistortion.end())
           distCount = aggregateDistortion[distortion];
-        distortionPotentials.Add(log(distCount + distAlpha));
+        distortionPotentials.Add(log(distCount + distAlpha)
+          - log(corpus->GetTotalSourceTokens() + sentence->tgt.size()*distAlpha));
       }
 
       lexicalProbs.Normalize();
       distortionPotentials.Normalize();
       int best = -1;
       float bestProb = 0;
-      for (int j = 0; j < sentence->tgt.size(); j++) {
+      for (size_t j = 0; j < sentence->tgt.size(); j++) {
         float prob = (exp(lexicalProbs[j] + distortionPotentials[j]));
         if (prob > bestProb) {
           best = j;

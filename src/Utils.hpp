@@ -61,7 +61,7 @@ public:
       normConst += exp(logProb - maxProb);
     }
     normConst = maxProb + log(normConst);
-    for (int i = 0; i < logProbs.size(); i++) {
+    for (size_t i = 0; i < logProbs.size(); i++) {
       logProbs[i] -= normConst;
     }
   }
