@@ -46,15 +46,20 @@ void Model1::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  BOOST_FOREACH(int position, order) {
+  #pragma omp parallel for
+  for (size_t i = 0; i < order.size(); i++) {
+    int position = order[i];
     pair<int, int> sentPos = corpus->GetSentenceAndPosition(position);
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
     const string &prevTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][prevTgtWord] <= 0) jointCounts[srcWord].erase(prevTgtWord);
-    counts[prevTgtWord]--;
+    #pragma omp critical
+    {
+      if (--jointCounts[srcWord][prevTgtWord] <= 0) jointCounts[srcWord].erase(prevTgtWord);
+      counts[prevTgtWord]--;
+    }
 
     // generate a sample
     vector<float> distParams;
@@ -67,19 +72,27 @@ void Model1::RunIteration(bool doAggregate)
       if (hasCognate.find(tgt) != hasCognate.end())
         normAlpha += cognateAlpha - alpha;
 
-      float prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
+      float prob;
+      if (jointCounts[srcWord].find(tgt) == jointCounts[srcWord].end()) {
+        prob = pairAlpha / (counts[tgt] + normAlpha);
+      } else {
+        prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
+      }
       distParams.push_back(prob);
     }
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 
     // update counts with new alignment link
-    sentence->align[sentPos.second] = sample;
-    jointCounts[srcWord][sentence->tgt[sample]]++;
-    counts[sentence->tgt[sample]]++;
-    if (doAggregate) {
-      aggregateJoint[srcWord][sentence->tgt[sample]]++;
-      aggregateCounts[sentence->tgt[sample]]++;
+    #pragma omp critical
+    {
+      sentence->align[sentPos.second] = sample;
+      jointCounts[srcWord][sentence->tgt[sample]]++;
+      counts[sentence->tgt[sample]]++;
+      if (doAggregate) {
+        aggregateJoint[srcWord][sentence->tgt[sample]]++;
+        aggregateCounts[sentence->tgt[sample]]++;
+      }
     }
   }
 }
