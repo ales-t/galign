@@ -51,15 +51,12 @@ void HMM::RunIteration(bool doAggregate)
     int distortion = 1;
     if (sentPos.second > 0) {
       distortion = sentence->align[sentPos.second] - sentence->align[sentPos.second - 1];
-      cerr << distortion << "\n";
     }
     distortionCounts[distortion] = max(0, distortionCounts[distortion] - 1);
 
     // generate a sample
-    vector<float> distParams;
-    distParams.reserve(sentence->tgt.size());
-    float lexicalProbNorm = 0;
-    float distortionProbNorm = 0;
+    LogDistribution lexicalProbs;
+    LogDistribution distortionPotentials;
 
     for (int i = 0; i < sentence->tgt.size(); i++) {
       const string &tgt = sentence->tgt[i];
@@ -67,11 +64,11 @@ void HMM::RunIteration(bool doAggregate)
       float normAlpha = alpha * corpus->GetSrcTypes().size();
       if (srcWord == tgt)
         pairAlpha = cognateAlpha;
-      if (hasCognate.find(tgt) != hasCognate.end())
+      if (corpus->HasCognate(tgt))
         normAlpha += cognateAlpha - alpha;
 
-      float prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
-      lexicalProbNorm += prob;
+      float logLexProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
+      lexicalProbs.Add(logLexProb);
       int distortion = 1;
       if (sentPos.second > 0) {
         distortion = i - sentence->align[sentPos.second - 1];
@@ -79,13 +76,16 @@ void HMM::RunIteration(bool doAggregate)
       int distCount = 0;
       if (distortionCounts.find(distortion) != distortionCounts.end())
         distCount = distortionCounts[distortion];
-      prob *= (distCount + alpha);
-      distortionProbNorm += distCount + alpha;
+      distortionPotentials.Add(log(distCount + alpha));
     }
 
-    // normalize
+    // get distribution parameters
+    vector<float> distParams;
+    distParams.reserve(sentence->tgt.size());
+    lexicalProbs.Normalize();
+    distortionPotentials.Normalize();
     for (int i = 0; i < sentence->tgt.size(); i++) {
-      distParams[i] /= (lexicalProbNorm * distortionProbNorm);
+      distParams.push_back(exp(lexicalProbs[i]) * exp(distortionPotentials[i]));
     }
 
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
@@ -117,22 +117,21 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     AlignmentType aggregAlign(sentence->src.size());
     for (int i = 0; i < sentence->src.size(); i++) {
-      vector<float> probs(sentence->tgt.size());
-      float lexicalProbNorm = 0;
-      float distortionProbNorm = 0;
+      LogDistribution lexicalProbs;
+      LogDistribution distortionPotentials;
 
       for (int j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
         float normAlpha = alpha * corpus->GetSrcTypes().size();
         if (sentence->src[i] == sentence->tgt[j])
           pairAlpha = cognateAlpha;
-        if (hasCognate.find(sentence->tgt[j]) != hasCognate.end())
+        if (corpus->HasCognate(sentence->tgt[j]))
           normAlpha += cognateAlpha - alpha;
 
-        float prob = (aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)        
-          / (aggregateCounts[sentence->tgt[j]] + normAlpha);
+        float logLexProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)        
+          - log(aggregateCounts[sentence->tgt[j]] + normAlpha);
+        lexicalProbs.Add(logLexProb);
 
-        lexicalProbNorm += prob;
         int distortion = 1;
         if (i > 0) {
           distortion = j - sentence->align[i - 1];
@@ -140,19 +139,18 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
         int distCount = 0;
         if (aggregateDistortion.find(distortion) != aggregateDistortion.end())
           distCount = aggregateDistortion[distortion];
-        prob *= (distCount + alpha);
-        distortionProbNorm += distCount + alpha;
-        probs[j] = prob;
+        distortionPotentials.Add(log(distCount + alpha));
       }
 
+      lexicalProbs.Normalize();
+      distortionPotentials.Normalize();
       int best = -1;
       float bestProb = 0;
-      // normalize
       for (int j = 0; j < sentence->tgt.size(); j++) {
-        probs[j] /= (lexicalProbNorm * distortionProbNorm);
-        if (probs[j] > bestProb) {
+        float prob = (exp(lexicalProbs[i]) * exp(distortionPotentials[i]));
+        if (prob > bestProb) {
           best = j;
-          bestProb = probs[j];
+          bestProb = prob;
         }      
       }
       aggregAlign[i] = best;

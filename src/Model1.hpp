@@ -30,7 +30,6 @@ private:
   Corpus *corpus;
   JointCountType jointCounts, aggregateJoint; 
   CountType counts, aggregateCounts;
-  boost::unordered_set<std::string> hasCognate;
   float alpha, cognateAlpha;
 };
 

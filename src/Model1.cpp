@@ -26,10 +26,6 @@ void Model1::AlignRandomly()
       int tgtWord = dist(generator);
       jointCounts[sentence->src[i]][sentence->tgt[tgtWord]]++;
       sentence->align.push_back(tgtWord);
-      for (int j = 0; j < sentence->tgt.size(); j++) {
-        if (sentence->tgt[j] == sentence->src[i])
-          hasCognate.insert(sentence->tgt[j]);
-      }
     }
     for (int i = 0; i < sentence->tgt.size(); i++)
       counts[sentence->tgt[i]]++;
@@ -59,19 +55,20 @@ void Model1::RunIteration(bool doAggregate)
     counts[prevTgtWord]--;
 
     // generate a sample
-    vector<float> distParams;
-    distParams.reserve(sentence->tgt.size());
+    LogDistribution lexicalProbs;
     BOOST_FOREACH(string tgt, sentence->tgt) {
       float pairAlpha = alpha;
       float normAlpha = alpha * corpus->GetSrcTypes().size();
       if (srcWord == tgt)
         pairAlpha = cognateAlpha;
-      if (hasCognate.find(tgt) != hasCognate.end())
+      if (corpus->HasCognate(tgt))
         normAlpha += cognateAlpha - alpha;
 
-      float prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
-      distParams.push_back(prob);
+      float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
+      lexicalProbs.Add(logProb);
     }
+    lexicalProbs.Normalize();
+    vector<float> distParams = lexicalProbs.Exp();
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 
@@ -93,20 +90,20 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
     AlignmentType aggregAlign(sentence->src.size());
     for (int i = 0; i < sentence->src.size(); i++) {
       int best = -1;
-      float bestProb = 0;
+      float bestProb = numeric_limits<float>::min();
       for (int j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
         float normAlpha = alpha * corpus->GetSrcTypes().size();
         if (sentence->src[i] == sentence->tgt[j])
           pairAlpha = cognateAlpha;
-        if (hasCognate.find(sentence->tgt[j]) != hasCognate.end())
+        if (corpus->HasCognate(sentence->tgt[j]))
           normAlpha += cognateAlpha - alpha;
 
-        float prob = (aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
-          / (aggregateCounts[sentence->tgt[j]] + normAlpha);
-        if (prob > bestProb) {
+        float logProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
+          - log(aggregateCounts[sentence->tgt[j]] + normAlpha);
+        if (logProb > bestProb) {
           best = j;
-          bestProb = prob;
+          bestProb = logProb;
         }      
       }
       aggregAlign[i] = best;
@@ -115,25 +112,3 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
   }
   return out;
 }
-
-/*
-CountType Model1::GetAverageCounts(int iterations)
-{
-  CountType out;
-  BOOST_FOREACH(CountType::value_type tgt, aggregateCounts) {
-    out[tgt.first] = ceil((float) tgt.second / iterations);
-  }
-  return out;
-}
-
-JointCountType Model1::GetAverageJointCounts(int iterations)
-{
-  JointCountType out;
-  BOOST_FOREACH(JointCountType::value_type src, aggregateJoint) {
-    BOOST_FOREACH(CountType::value_type tgt, src.second) {
-      out[src.first][tgt.first] = ceil((float) tgt.second / iterations);
-    }
-  }
-  return out;
-}
-*/

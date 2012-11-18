@@ -28,7 +28,6 @@ private:
   JointCountType jointCounts, aggregateJoint; 
   CountType counts, aggregateCounts;
   DistortionCountType distortionCounts, aggregateDistortion;
-  boost::unordered_set<std::string> hasCognate;
   float alpha, cognateAlpha;
 };
 

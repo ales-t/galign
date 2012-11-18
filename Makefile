@@ -13,6 +13,6 @@ clean:
 $(OBJDIR)/wordalign: $(SRCDIR)/wordalign.cpp $(OBJDIR)/Corpus.o $(OBJDIR)/Model1.o $(OBJDIR)/Options.o $(OBJDIR)/Writer.o $(OBJDIR)/Utils.o $(OBJDIR)/HMM.o
 	$(CXX) $(CXX_FLAGS) $^ $(LD_FLAGS) -o $@ 
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(SRCDIR)/%.hpp
 	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
