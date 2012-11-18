@@ -69,12 +69,7 @@ void Model1::RunIteration(bool doAggregate)
       if (hasCognate.find(tgt) != hasCognate.end())
         normAlpha += cognateAlpha - alpha;
 
-      float prob;
-      if (jointCounts[srcWord].find(tgt) == jointCounts[srcWord].end()) {
-        prob = pairAlpha / (counts[tgt] + normAlpha);
-      } else {
-        prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
-      }
+      float prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
       distParams.push_back(prob);
     }
     discrete_distribution<int> dist(distParams.begin(), distParams.end());

@@ -70,12 +70,7 @@ void HMM::RunIteration(bool doAggregate)
       if (hasCognate.find(tgt) != hasCognate.end())
         normAlpha += cognateAlpha - alpha;
 
-      float prob;
-      if (jointCounts[srcWord].find(tgt) == jointCounts[srcWord].end()) {
-        prob = pairAlpha / (counts[tgt] + normAlpha);
-      } else {
-        prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
-      }
+      float prob = (jointCounts[srcWord][tgt] + pairAlpha) / (counts[tgt] + normAlpha);
       lexicalProbNorm += prob;
       int distortion = 1;
       if (sentPos.second > 0) {
@@ -100,7 +95,7 @@ void HMM::RunIteration(bool doAggregate)
     sentence->align[sentPos.second] = sample;
     jointCounts[srcWord][sentence->tgt[sample]]++;
     counts[sentence->tgt[sample]]++;
-    int distortion = 1;
+    distortion = 1;
     if (sentPos.second > 0) {
       distortion = sample - sentence->align[sentPos.second - 1];
     }
