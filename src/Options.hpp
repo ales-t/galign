@@ -17,7 +17,7 @@ public:
   bool GetHelp()                { return help; }
   bool GetCompress()            { return compress; }
   int GetIterations()           { return iterations; }
-  int GetAggregateAfter()       { return aggregateAfter; }
+  int GetAggregateFrom()        { return aggregateFrom; }
   float GetAlpha()              { return alpha; }
   float GetCognateAlpha()       { return alpha * cognateBoost; }
   std::string GetOutputPrefix() { return outputPrefix; }
@@ -28,7 +28,7 @@ private:
   Options(Options const &);
   Options &operator=(Options const &);
 
-  int iterations, aggregateAfter;
+  int iterations, aggregateFrom;
   float alpha, cognateBoost;
   std::string outputPrefix, inputFile;
   bool compress, help;

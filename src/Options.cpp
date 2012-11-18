@@ -15,8 +15,8 @@ void Options::ParseOptions(int argc, char **argv)
   opts.add_options()
     ("output-prefix,o", value<string>(&outputPrefix)->default_value("align"),
      "Prefix of created output files.")
-    ("aggregate-after,g", value<int>(&aggregateAfter)->default_value(10),
-     "Iteration after which samples are aggregated for the final word alignment.")
+    ("aggregate-from,g", value<int>(&aggregateFrom)->default_value(10),
+     "Iteration from which samples are aggregated for the final word alignment.")
     ("iterations,t", value<int>(&iterations)->default_value(20),
      "Number of iterations.")
     ("cognate-boost,b", value<float>(&cognateBoost)->default_value(1),

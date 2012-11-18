@@ -6,7 +6,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
-#include <omp.h>
+#include <cmath>
 
 using namespace std;
 using namespace boost;
@@ -47,9 +47,6 @@ void Model1::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  int cores = omp_get_num_procs();
-  omp_set_num_threads(min(cores, 6));
-  #pragma omp parallel for
   for (size_t i = 0; i < order.size(); i++) {
     int position = order[i];
     pair<int, int> sentPos = corpus->GetSentenceAndPosition(position);
@@ -58,11 +55,8 @@ void Model1::RunIteration(bool doAggregate)
     const string &prevTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    #pragma omp critical
-    {
-      if (--jointCounts[srcWord][prevTgtWord] <= 0) jointCounts[srcWord].erase(prevTgtWord);
-      counts[prevTgtWord]--;
-    }
+    if (--jointCounts[srcWord][prevTgtWord] <= 0) jointCounts[srcWord].erase(prevTgtWord);
+    counts[prevTgtWord]--;
 
     // generate a sample
     vector<float> distParams;
@@ -87,15 +81,12 @@ void Model1::RunIteration(bool doAggregate)
     int sample = dist(generator);
 
     // update counts with new alignment link
-    #pragma omp critical
-    {
-      sentence->align[sentPos.second] = sample;
-      jointCounts[srcWord][sentence->tgt[sample]]++;
-      counts[sentence->tgt[sample]]++;
-      if (doAggregate) {
-        aggregateJoint[srcWord][sentence->tgt[sample]]++;
-        aggregateCounts[sentence->tgt[sample]]++;
-      }
+    sentence->align[sentPos.second] = sample;
+    jointCounts[srcWord][sentence->tgt[sample]]++;
+    counts[sentence->tgt[sample]]++;
+    if (doAggregate) {
+      aggregateJoint[srcWord][sentence->tgt[sample]]++;
+      aggregateCounts[sentence->tgt[sample]]++;
     }
   }
 }
@@ -129,3 +120,25 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
   }
   return out;
 }
+
+/*
+CountType Model1::GetAverageCounts(int iterations)
+{
+  CountType out;
+  BOOST_FOREACH(CountType::value_type tgt, aggregateCounts) {
+    out[tgt.first] = ceil((float) tgt.second / iterations);
+  }
+  return out;
+}
+
+JointCountType Model1::GetAverageJointCounts(int iterations)
+{
+  JointCountType out;
+  BOOST_FOREACH(JointCountType::value_type src, aggregateJoint) {
+    BOOST_FOREACH(CountType::value_type tgt, src.second) {
+      out[src.first][tgt.first] = ceil((float) tgt.second / iterations);
+    }
+  }
+  return out;
+}
+*/

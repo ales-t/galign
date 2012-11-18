@@ -27,19 +27,22 @@ int main(int argc, char **argv)
   // initialize IBM Model 1
   Model1 model1(corpus, opts.GetAlpha(), opts.GetCognateAlpha());
   model1.AlignRandomly();
+  Log("Initialized Model1");
 
-  // run model iterations
-  for (int i = 0; i < opts.GetIterations(); i++) {
-    model1.RunIteration(i > opts.GetAggregateAfter());
+  // run Model 1 iterations
+  for (int i = 1; i <= opts.GetIterations(); i++) {
+    model1.RunIteration(i >= opts.GetAggregateFrom());
     Log("Model1: Finished iteration " + boost::lexical_cast<string>(i));
   }
 
+  // initialize HMM model, use counts from IBM Model 1
   HMM hmmModel(corpus, opts.GetAlpha(), opts.GetCognateAlpha(), model1.GetCounts(),
       model1.GetJointCounts());
+  Log("Initialized HMM");
 
-  // run model iterations
-  for (int i = 0; i < opts.GetIterations(); i++) {
-    hmmModel.RunIteration(i > opts.GetAggregateAfter());
+  // run HMM model iterations
+  for (int i = 1; i <= opts.GetIterations(); i++) {
+    hmmModel.RunIteration(i >= opts.GetAggregateFrom());
     Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
   }
 

@@ -11,8 +11,8 @@
 
 #include "Corpus.hpp"
 
-typedef boost::unordered_map<std::string, boost::unordered_map<std::string, int> > JointCountType;
 typedef boost::unordered_map<std::string, int> CountType;
+typedef boost::unordered_map<std::string, CountType> JointCountType;
 
 class Model1
 {
