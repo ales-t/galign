@@ -31,7 +31,7 @@ void Writer::WriteAlignmentLine(filtering_ostream &out, const std::vector<std::s
 {
   for (size_t i = 0; i < src.size(); i++) {
     if (gizaFormat)
-      cout << i << "-" << align[i];
+      out << i << "-" << align[i];
     else
       out << src[i] << "{" << tgt[align[i]] << "}";
     if (i != src.size() - 1)

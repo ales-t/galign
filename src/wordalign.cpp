@@ -51,10 +51,11 @@ int main(int argc, char **argv)
   Writer writer(corpus);
   string suffix = opts.GetCompress() ? ".gz" : "";
   writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
-  writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate.giza"
-      + suffix, hmmModel.GetAggregateAlignment(), true);
+  vector<AlignmentType> aggregAlign = hmmModel.GetAggregateAlignment();
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
-      + suffix, hmmModel.GetAggregateAlignment());
+      + suffix, aggregAlign);
+  writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate.giza"
+      + suffix, aggregAlign, true);
   Log("Done.");
 
   return 0;
