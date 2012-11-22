@@ -16,6 +16,8 @@ HMM::HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const
 : corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha), distAlpha(distAlpha), counts(prevCounts),
   jointCounts(prevJoint)
 {
+  aggregateCounts.resize(corpus->GetTotalTargetTypes());
+  aggregateJoint.resize(corpus->GetTotalSourceTypes());
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
     for (size_t i = 0; i < sentence->src.size(); i++) {

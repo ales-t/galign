@@ -10,8 +10,8 @@
 #include "Corpus.hpp"
 #include "Utils.hpp"
 
-typedef SafeHash<size_t, int>  CountType;
-typedef SafeHash<size_t, CountType> JointCountType;
+typedef std::vector<int> CountType;
+typedef std::vector<SafeHash<size_t, int> > JointCountType;
 
 class Model1
 {
@@ -20,6 +20,10 @@ public:
     corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha)
   {
     order = corpus->GetTokensToSentences();
+    counts.resize(corpus->GetTotalTargetTypes());
+    aggregateCounts.resize(corpus->GetTotalTargetTypes());
+    jointCounts.resize(corpus->GetTotalSourceTypes());
+    aggregateJoint.resize(corpus->GetTotalSourceTypes());
   }
   void AlignRandomly();
   void RunIteration(bool doAggregate);
