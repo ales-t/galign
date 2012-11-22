@@ -63,7 +63,7 @@ void HMM::RunIteration(bool doAggregate)
     for (size_t i = 0; i < sentence->tgt.size(); i++) {
       size_t tgt = sentence->tgt[i];
       float pairAlpha = alpha;
-      float normAlpha = alpha * corpus->GetSrcTypes().size();
+      float normAlpha = alpha * corpus->GetTotalSourceTokens();
       if (srcWord == tgt)
         pairAlpha = cognateAlpha;
       if (corpus->HasCognate(tgt))
@@ -142,13 +142,13 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
 
       for (size_t j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
-        float normAlpha = alpha * corpus->GetSrcTypes().size();
+        float normAlpha = alpha * corpus->GetTotalSourceTokens();
         if (sentence->src[i] == sentence->tgt[j])
           pairAlpha = cognateAlpha;
         if (corpus->HasCognate(sentence->tgt[j]))
           normAlpha += cognateAlpha - alpha;
 
-        float logLexProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)        
+        float logLexProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
           - log(aggregateCounts[sentence->tgt[j]] + normAlpha);
         lexicalProbs.Add(logLexProb);
 
@@ -183,7 +183,7 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
         }      
       }
       if (best == -1) {
-        Die("Zero probability for word '" + sentence->src[i] +
+        Die("Zero probability for word '" + corpus->GetSrcWord(sentence->src[i]) +
             "' in sentence " + lexical_cast<string>(lineNum));
       }
       aggregAlign[i] = best;

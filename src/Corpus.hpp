@@ -29,12 +29,12 @@ public:
   std::vector<Sentence *> &GetSentences() { return sentences; }
   const SentenceMappingType &GetTokensToSentences() { return tokensToSentences; }
   size_t GetTotalSourceTokens() { return totalSourceTokens; }
+  size_t GetTotalSourceTypes() { return srcIndex.left.size(); }
   bool HasCognate(size_t wordIdx) { return cognates.find(wordIdx) != cognates.end(); }
   const std::string &GetSrcWord(size_t index) { return GetWord(srcIndex, index); }
   const std::string &GetTgtWord(size_t index) { return GetWord(tgtIndex, index); }
   size_t GetSrcIndex(const std::string &word) { return GetIndex(srcIndex, word); }
   size_t GetTgtIndex(const std::string &word) { return GetIndex(tgtIndex, word); }
-  size_t GetTotalSourceTypes() { return srcIndex.left.size(); }
 
 private:
   void Read(boost::iostreams::filtering_istream &in);

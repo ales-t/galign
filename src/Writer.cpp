@@ -33,7 +33,7 @@ void Writer::WriteAlignmentLine(filtering_ostream &out, const WordSequenceType &
     if (gizaFormat)
       out << i << "-" << align[i];
     else
-      out << src[i] << "{" << tgt[align[i]] << "}";
+      out << corpus->GetSrcWord(src[i]) << "{" << corpus->GetTgtWord(tgt[align[i]]) << "}";
     if (i != src.size() - 1)
       out << " ";
   }

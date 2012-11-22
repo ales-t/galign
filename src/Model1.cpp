@@ -91,7 +91,7 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
       float bestProb = -numeric_limits<float>::infinity();
       for (size_t j = 0; j < sentence->tgt.size(); j++) {
         float pairAlpha = alpha;
-        float normAlpha = alpha * corpus->GetSrcTypes().size();
+        float normAlpha = alpha * corpus->GetTotalSourceTokens();
         if (sentence->src[i] == sentence->tgt[j])
           pairAlpha = cognateAlpha;
         if (corpus->HasCognate(sentence->tgt[j]))
@@ -105,7 +105,7 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
         }      
       }
       if (best == -1) {
-        Die("Zero probability for word '" + sentence->src[i] +
+        Die("Zero probability for word '" + corpus->GetSrcWord(sentence->src[i]) +
             "' in sentence " + lexical_cast<string>(lineNum));
       }
       aggregAlign[i] = best;
