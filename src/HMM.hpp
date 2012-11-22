@@ -12,7 +12,7 @@
 #include "Corpus.hpp"
 #include "Model1.hpp"
 
-typedef boost::unordered_map<int, int> DistortionCountType;
+typedef SafeHash<int, int> DistortionCountType;
 
 class HMM
 {

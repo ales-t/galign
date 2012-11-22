@@ -11,6 +11,8 @@
 
 #include <boost/foreach.hpp>
 #include <boost/iostreams/filtering_stream.hpp> 
+#include <boost/lexical_cast.hpp>
+#include <tbb/concurrent_hash_map.h>
 
 inline void Warn(const std::string &msg)
 {
@@ -27,6 +29,40 @@ inline void Die(const std::string &msg)
   std::cerr << "ERROR: " << msg << std::endl;
   exit(1);
 }
+
+template <typename KeyT, typename ValueT>
+class SafeHash
+{
+  typedef tbb::concurrent_hash_map<KeyT, ValueT> InternalHashType;
+
+public:
+  typedef ValueT value_type;
+
+  ValueT &operator[](const KeyT &key)
+  {
+    typename InternalHashType::accessor a;
+    if (! internalHash.find(a, key)) {
+      internalHash.insert(a, key);
+    }
+    return a->second;
+  }
+
+  bool contains(const KeyT &key) const
+  {
+    typename InternalHashType::const_accessor a;
+    return internalHash.find(a, key);
+  }
+
+  void erase(const KeyT &key)
+  {
+    typename InternalHashType::accessor a;
+    internalHash.find(a, key);
+    internalHash.erase(a);    
+  }
+
+private:
+  InternalHashType internalHash;
+};
 
 class LogDistribution
 {

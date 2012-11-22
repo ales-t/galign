@@ -34,7 +34,9 @@ void HMM::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  BOOST_FOREACH(SentenceMappingType::value_type sentPos, order) {
+  #pragma omp parallel for
+  for (size_t posIt = 0; posIt < order.size(); posIt++) {
+    pair<size_t, size_t> sentPos = order[posIt];
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
     const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
@@ -78,11 +80,11 @@ void HMM::RunIteration(bool doAggregate)
         outDistortion = sentence->align[sentPos.second + 1] - i;
       }
       int inDistCount = 0;
-      if (distortionCounts.find(inDistortion) != distortionCounts.end())
+      if (distortionCounts.contains(inDistortion))
         inDistCount = distortionCounts[inDistortion];
       inDistortionPotentials.Add(log(inDistCount + distAlpha));
       int outDistCount = 0;
-      if (distortionCounts.find(outDistortion) != distortionCounts.end())
+      if (distortionCounts.contains(outDistortion))
         outDistCount = distortionCounts[outDistortion];
       outDistortionPotentials.Add(log(outDistCount + distAlpha));
     }
@@ -126,9 +128,9 @@ void HMM::RunIteration(bool doAggregate)
 vector<AlignmentType> HMM::GetAggregateAlignment()
 {
   vector<AlignmentType> out;
-  BOOST_FOREACH(DistortionCountType::value_type dist, aggregateDistortion) {
-    cerr << dist.first << ":\t" << dist.second << endl;
-  }
+//  BOOST_FOREACH(DistortionCountType::value_type dist, aggregateDistortion) {
+//    cerr << dist.first << ":\t" << dist.second << endl;
+//  }
   int lineNum = 0;
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     lineNum++;
@@ -159,11 +161,11 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
           outDistortion = sentence->align[i + 1] - j;
         }
         int inDistCount = 0;
-        if (aggregateDistortion.find(inDistortion) != aggregateDistortion.end())
+        if (aggregateDistortion.contains(inDistortion))
           inDistCount = aggregateDistortion[inDistortion];
         inDistortionPotentials.Add(log(inDistCount + distAlpha));
         int outDistCount = 0;
-        if (aggregateDistortion.find(outDistortion) != aggregateDistortion.end())
+        if (aggregateDistortion.contains(outDistortion))
           outDistCount = aggregateDistortion[outDistortion];
         outDistortionPotentials.Add(log(outDistCount + distAlpha));
       }

@@ -3,10 +3,10 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/random.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
+#include <tbb/concurrent_vector.h>
 #include <cmath>
+#include <omp.h>
 
 using namespace std;
 using namespace boost;
@@ -38,18 +38,20 @@ void Model1::RunIteration(bool doAggregate)
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  BOOST_FOREACH(SentenceMappingType::value_type sentPos, order) {
+  #pragma omp parallel for
+  for (size_t posIt = 0; posIt < order.size(); posIt++) {
+    pair<size_t, size_t> sentPos = order[posIt];
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
-    const string &prevTgtWord = sentence->tgt[sentence->align[sentPos.second]];
+    const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][prevTgtWord] <= 0) jointCounts[srcWord].erase(prevTgtWord);
-    counts[prevTgtWord]--;
+    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
+    counts[oldTgtWord]--;
 
     // generate a sample
     LogDistribution lexicalProbs;
-    BOOST_FOREACH(string tgt, sentence->tgt) {
+    BOOST_FOREACH(const string &tgt, sentence->tgt) {
       float pairAlpha = alpha;
       float normAlpha = alpha * corpus->GetSrcTypes().size();
       if (srcWord == tgt)
@@ -57,6 +59,7 @@ void Model1::RunIteration(bool doAggregate)
       if (corpus->HasCognate(tgt))
         normAlpha += cognateAlpha - alpha;
 
+      //float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
       float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
       lexicalProbs.Add(logProb);
     }

@@ -6,13 +6,12 @@
 #include <vector>
 
 #include <boost/random.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include "Corpus.hpp"
+#include "Utils.hpp"
 
-typedef boost::unordered_map<std::string, int> CountType;
-typedef boost::unordered_map<std::string, CountType> JointCountType;
+typedef SafeHash<std::string, int>  CountType;
+typedef SafeHash<std::string, CountType> JointCountType;
 
 class Model1
 {
