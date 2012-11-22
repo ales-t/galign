@@ -24,11 +24,11 @@ void Model1::AlignRandomly()
     uniform_int_distribution<int> dist(0, sentence->tgt.size() - 1);
     for (size_t i = 0; i < sentence->src.size(); i++) {
       int tgtWord = dist(generator);
-      jointCounts[sentence->src[i]][sentence->tgt[tgtWord]]++;
+      jointCounts.at(sentence->src[i]).at(sentence->tgt[tgtWord])++;
       sentence->align.push_back(tgtWord);
     }
     for (size_t i = 0; i < sentence->tgt.size(); i++)
-      counts[sentence->tgt[i]]++;
+      counts.at(sentence->tgt[i])++;
   }
 }
 
@@ -46,8 +46,8 @@ void Model1::RunIteration(bool doAggregate)
     const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
-    counts[oldTgtWord]--;
+    if (--jointCounts.at(srcWord).at(oldTgtWord) <= 0) jointCounts.at(srcWord).erase(oldTgtWord);
+    counts.at(oldTgtWord)--;
 
     // generate a sample
     LogDistribution lexicalProbs;
@@ -70,11 +70,11 @@ void Model1::RunIteration(bool doAggregate)
 
     // update counts with new alignment link
     sentence->align[sentPos.second] = sample;
-    jointCounts[srcWord][sentence->tgt[sample]]++;
-    counts[sentence->tgt[sample]]++;
+    jointCounts.at(srcWord).at(sentence->tgt[sample])++;
+    counts.at(sentence->tgt[sample])++;
     if (doAggregate) {
-      aggregateJoint[srcWord][sentence->tgt[sample]]++;
-      aggregateCounts[sentence->tgt[sample]]++;
+      aggregateJoint.at(srcWord).at(sentence->tgt[sample])++;
+      aggregateCounts.at(sentence->tgt[sample])++;
     }
   }
 }

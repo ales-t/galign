@@ -2,7 +2,7 @@ BOOST_PATH = /usr
 OBJDIR = bin
 SRCDIR = src
 
-CXX_FLAGS = -O3 -I$(BOOST_PATH)/include/ -g -Wall -fopenmp
+CXX_FLAGS = -O3 -I$(BOOST_PATH)/include/ -g -Wall -fopenmp -fpermissive
 LD_FLAGS = -Wl,-Bstatic $(BOOST_PATH)/lib/libboost_program_options.a $(BOOST_PATH)/lib/libboost_iostreams.a -lz -Wl,-Bdynamic -ltbb 
 
 all: $(OBJDIR)/wordalign

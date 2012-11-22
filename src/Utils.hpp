@@ -38,7 +38,18 @@ class SafeHash
 public:
   typedef ValueT value_type;
 
-  ValueT &operator[](const KeyT &key)
+  const ValueT &operator[](const KeyT &key) const
+  {
+    typename InternalHashType::const_accessor a;
+    if (! internalHash.find(a, key)) {
+//      Die("Requested non-existent key: "
+//          + boost::lexical_cast<std::string>(key));
+      return defaultValue;
+    }
+    return a->second;
+  }
+
+  ValueT &at(const KeyT &key)
   {
     typename InternalHashType::accessor a;
     if (! internalHash.find(a, key)) {
@@ -62,6 +73,7 @@ public:
 
 private:
   InternalHashType internalHash;
+  ValueT defaultValue;
 };
 
 class LogDistribution

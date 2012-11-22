@@ -22,7 +22,7 @@ HMM::HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const
       int distortion = 1;
       if (i > 0)
         distortion = sentence->align[i] - sentence->align[i - 1];
-      distortionCounts[distortion]++;
+      distortionCounts.at(distortion)++;
     }
   }
   order = corpus->GetTokensToSentences();
@@ -42,18 +42,18 @@ void HMM::RunIteration(bool doAggregate)
     const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
-    counts[oldTgtWord]--;
+    if (--jointCounts[srcWord].at(oldTgtWord) <= 0) jointCounts.at(srcWord).erase(oldTgtWord);
+    counts.at(oldTgtWord)--;
     int inDistortion = 1;
     if (sentPos.second > 0) {
       inDistortion = sentence->align[sentPos.second] - sentence->align[sentPos.second - 1];
     }
-    distortionCounts[inDistortion] = max(0, distortionCounts[inDistortion] - 1);
+    distortionCounts.at(inDistortion) = max(0, distortionCounts[inDistortion] - 1);
     int outDistortion = 1;
     if (sentPos.second < sentence->src.size() - 1) {
       outDistortion = sentence->align[sentPos.second + 1] - sentence->align[sentPos.second];
     }
-    distortionCounts[outDistortion] = max(0, distortionCounts[outDistortion] - 1);
+    distortionCounts.at(outDistortion) = max(0, distortionCounts[outDistortion] - 1);
 
     // generate a sample
     LogDistribution lexicalProbs;
@@ -104,8 +104,8 @@ void HMM::RunIteration(bool doAggregate)
 
     // update counts with new alignment link
     sentence->align[sentPos.second] = sample;
-    jointCounts[srcWord][sentence->tgt[sample]]++;
-    counts[sentence->tgt[sample]]++;
+    jointCounts[srcWord].at(sentence->tgt[sample])++;
+    counts.at(sentence->tgt[sample])++;
     inDistortion = 1;
     outDistortion = 1;
     if (sentPos.second > 0) {
@@ -114,13 +114,13 @@ void HMM::RunIteration(bool doAggregate)
     if (sentPos.second < sentence->src.size() - 1) {
       outDistortion = sentence->align[sentPos.second + 1] - sample;
     }
-    distortionCounts[inDistortion]++;
-    distortionCounts[outDistortion]++;
+    distortionCounts.at(inDistortion)++;
+    distortionCounts.at(outDistortion)++;
     if (doAggregate) {
-      aggregateJoint[srcWord][sentence->tgt[sample]]++;
-      aggregateCounts[sentence->tgt[sample]]++;
-      aggregateDistortion[inDistortion]++;
-      aggregateDistortion[outDistortion]++;
+      aggregateJoint[srcWord].at(sentence->tgt[sample])++;
+      aggregateCounts.at(sentence->tgt[sample])++;
+      aggregateDistortion.at(inDistortion)++;
+      aggregateDistortion.at(outDistortion)++;
     }
   }
 }
