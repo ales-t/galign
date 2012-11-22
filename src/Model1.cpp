@@ -42,8 +42,8 @@ void Model1::RunIteration(bool doAggregate)
   for (size_t posIt = 0; posIt < order.size(); posIt++) {
     pair<size_t, size_t> sentPos = order[posIt];
     Sentence *sentence = sentences[sentPos.first];
-    const string &srcWord = sentence->src[sentPos.second];
-    const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
+    size_t srcWord = sentence->src[sentPos.second];
+    size_t oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
     if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
@@ -51,9 +51,9 @@ void Model1::RunIteration(bool doAggregate)
 
     // generate a sample
     LogDistribution lexicalProbs;
-    BOOST_FOREACH(const string &tgt, sentence->tgt) {
+    BOOST_FOREACH(size_t tgt, sentence->tgt) {
       float pairAlpha = alpha;
-      float normAlpha = alpha * corpus->GetSrcTypes().size();
+      float normAlpha = alpha * corpus->GetTotalSourceTypes();
       if (srcWord == tgt)
         pairAlpha = cognateAlpha;
       if (corpus->HasCognate(tgt))

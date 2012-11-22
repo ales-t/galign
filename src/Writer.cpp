@@ -26,8 +26,8 @@ void Writer::WriteAlignment(const std::string &fileName, const vector<AlignmentT
   close(*out);
 }
 
-void Writer::WriteAlignmentLine(filtering_ostream &out, const std::vector<std::string> &src,
-  const std::vector<std::string> &tgt, const AlignmentType &align, bool gizaFormat)
+void Writer::WriteAlignmentLine(filtering_ostream &out, const WordSequenceType &src,
+  const WordSequenceType &tgt, const AlignmentType &align, bool gizaFormat)
 {
   for (size_t i = 0; i < src.size(); i++) {
     if (gizaFormat)

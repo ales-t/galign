@@ -18,8 +18,8 @@ public:
 
 private:
   void WriteAlignmentLine(boost::iostreams::filtering_ostream &out,
-      const std::vector<std::string> &src,
-      const std::vector<std::string> &tgt,
+      const WordSequenceType &src,
+      const WordSequenceType &tgt,
       const AlignmentType &align, bool gizaFormat);
 
   Corpus *corpus;

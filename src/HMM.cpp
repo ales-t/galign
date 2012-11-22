@@ -38,8 +38,8 @@ void HMM::RunIteration(bool doAggregate)
   for (size_t posIt = 0; posIt < order.size(); posIt++) {
     pair<size_t, size_t> sentPos = order[posIt];
     Sentence *sentence = sentences[sentPos.first];
-    const string &srcWord = sentence->src[sentPos.second];
-    const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
+    size_t srcWord = sentence->src[sentPos.second];
+    size_t oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
     if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
@@ -61,7 +61,7 @@ void HMM::RunIteration(bool doAggregate)
     LogDistribution outDistortionPotentials;
 
     for (size_t i = 0; i < sentence->tgt.size(); i++) {
-      const string &tgt = sentence->tgt[i];
+      size_t tgt = sentence->tgt[i];
       float pairAlpha = alpha;
       float normAlpha = alpha * corpus->GetSrcTypes().size();
       if (srcWord == tgt)

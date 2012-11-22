@@ -10,8 +10,8 @@
 #include "Corpus.hpp"
 #include "Utils.hpp"
 
-typedef SafeHash<std::string, int>  CountType;
-typedef SafeHash<std::string, CountType> JointCountType;
+typedef SafeHash<size_t, int>  CountType;
+typedef SafeHash<size_t, CountType> JointCountType;
 
 class Model1
 {
