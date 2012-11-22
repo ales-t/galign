@@ -41,8 +41,7 @@ void Corpus::Read(filtering_istream &in)
 
     for (size_t i = 0; i < sentence->src.size(); i++) {
       sourceTypes.insert(sentence->src[i]);
-      tokensToSentences.insert(make_pair(totalSourceTokens++,
-          make_pair(lineNum - 1, i))); // 0-based
+      tokensToSentences.push_back(make_pair(lineNum - 1, i)); // 0-based
       for (size_t j = 0; j < sentence->tgt.size(); j++) {
         if (sentence->tgt[j] == sentence->src[i])
           cognates.insert(sentence->tgt[j]);
@@ -51,15 +50,4 @@ void Corpus::Read(filtering_istream &in)
     sentences.push_back(sentence);
   }
   close(in);
-}
-
-pair<int, int> Corpus::GetSentenceAndPosition(int positionInCorpus)
-{
-  boost::unordered_map<int, std::pair<int, int> >::const_iterator it;
-  it = tokensToSentences.find(positionInCorpus);
-  if (it == tokensToSentences.end()) {
-    Die("Requested position " + lexical_cast<string>(positionInCorpus)
-        + " beyond corpus size " + lexical_cast<string>(totalSourceTokens));
-  }
-  return it->second;
 }

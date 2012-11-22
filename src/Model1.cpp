@@ -34,18 +34,11 @@ void Model1::AlignRandomly()
 
 void Model1::RunIteration(bool doAggregate)
 {
-  vector<int> order;
-  order.reserve(corpus->GetTotalSourceTokens());
-  for (size_t i = 0; i < corpus->GetTotalSourceTokens(); i++)
-    order.push_back(i);
-
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  for (size_t posIt = 0; posIt < order.size(); posIt++) {
-    int position = order[posIt];
-    pair<int, int> sentPos = corpus->GetSentenceAndPosition(position);
+  BOOST_FOREACH(SentenceMappingType::value_type sentPos, order) {
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
     const string &prevTgtWord = sentence->tgt[sentence->align[sentPos.second]];

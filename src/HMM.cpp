@@ -25,22 +25,16 @@ HMM::HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const
       distortionCounts[distortion]++;
     }
   }
+  order = corpus->GetTokensToSentences();
 }
 
 void HMM::RunIteration(bool doAggregate)
 {
-  vector<int> order;
-  order.reserve(corpus->GetTotalSourceTokens());
-  for (size_t i = 0; i < corpus->GetTotalSourceTokens(); i++)
-    order.push_back(i);
-
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());
 
   // over all words in corpus (in random order)
-  for (size_t posIdx = 0; posIdx < order.size(); posIdx++) {
-    int position = order[posIdx];
-    pair<int, int> sentPos = corpus->GetSentenceAndPosition(position);
+  BOOST_FOREACH(SentenceMappingType::value_type sentPos, order) {
     Sentence *sentence = sentences[sentPos.first];
     const string &srcWord = sentence->src[sentPos.second];
     const string &oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];

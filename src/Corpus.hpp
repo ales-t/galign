@@ -10,6 +10,7 @@
 #include <boost/unordered_set.hpp>
 
 typedef std::vector<int> AlignmentType;
+typedef std::vector<std::pair<size_t, size_t> > SentenceMappingType;
 
 struct Sentence
 {
@@ -25,7 +26,7 @@ public:
   Corpus(const std::string &fileName);
 
   std::vector<Sentence *> &GetSentences() { return sentences; }
-  std::pair<int, int> GetSentenceAndPosition(int positionInCorpus);
+  const SentenceMappingType &GetTokensToSentences() { return tokensToSentences; }
   const boost::unordered_set<std::string> &GetSrcTypes() { return sourceTypes; }
   size_t GetTotalSourceTokens() { return totalSourceTokens; }
   bool HasCognate(const std::string &word) { return cognates.find(word) != cognates.end(); }
@@ -34,7 +35,7 @@ private:
   void Read(boost::iostreams::filtering_istream &in);
 
   std::vector<Sentence *> sentences;
-  boost::unordered_map<int, std::pair<int, int> > tokensToSentences;
+  SentenceMappingType tokensToSentences; // for random shuffling
   boost::unordered_set<std::string> sourceTypes;
   boost::unordered_set<std::string> cognates;
   size_t totalSourceTokens;

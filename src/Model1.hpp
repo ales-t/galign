@@ -18,7 +18,10 @@ class Model1
 {
 public:
   Model1(Corpus *corpus, float alpha, float cognateAlpha) :
-    corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha) {}
+    corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha)
+  {
+    order = corpus->GetTokensToSentences();
+  }
   void AlignRandomly();
   void RunIteration(bool doAggregate);
   std::vector<AlignmentType> GetAggregateAlignment();
@@ -27,6 +30,7 @@ public:
   const JointCountType &GetJointCounts() { return jointCounts; }
 private:
   boost::random::mt19937 generator;
+  SentenceMappingType order;
   Corpus *corpus;
   JointCountType jointCounts, aggregateJoint; 
   CountType counts, aggregateCounts;

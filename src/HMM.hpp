@@ -23,6 +23,7 @@ public:
   std::vector<AlignmentType> GetAggregateAlignment();
   
 private:
+  SentenceMappingType order;
   boost::random::mt19937 generator;
   Corpus *corpus;
   float alpha, cognateAlpha, distAlpha;
