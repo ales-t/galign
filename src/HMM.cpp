@@ -44,7 +44,7 @@ void HMM::RunIteration(bool doAggregate)
     size_t oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
+    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].Erase(oldTgtWord);
     counts[oldTgtWord]--;
     int inDistortion = 1;
     if (sentPos.second > 0) {
@@ -82,11 +82,11 @@ void HMM::RunIteration(bool doAggregate)
         outDistortion = sentence->align[sentPos.second + 1] - i;
       }
       int inDistCount = 0;
-      if (distortionCounts.contains(inDistortion))
+      if (distortionCounts.Contains(inDistortion))
         inDistCount = distortionCounts[inDistortion];
       inDistortionPotentials.Add(log(inDistCount + distAlpha));
       int outDistCount = 0;
-      if (distortionCounts.contains(outDistortion))
+      if (distortionCounts.Contains(outDistortion))
         outDistCount = distortionCounts[outDistortion];
       outDistortionPotentials.Add(log(outDistCount + distAlpha));
     }
@@ -163,11 +163,11 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
           outDistortion = sentence->align[i + 1] - j;
         }
         int inDistCount = 0;
-        if (aggregateDistortion.contains(inDistortion))
+        if (aggregateDistortion.Contains(inDistortion))
           inDistCount = aggregateDistortion[inDistortion];
         inDistortionPotentials.Add(log(inDistCount + distAlpha));
         int outDistCount = 0;
-        if (aggregateDistortion.contains(outDistortion))
+        if (aggregateDistortion.Contains(outDistortion))
           outDistCount = aggregateDistortion[outDistortion];
         outDistortionPotentials.Add(log(outDistCount + distAlpha));
       }

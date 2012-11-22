@@ -46,7 +46,7 @@ void Model1::RunIteration(bool doAggregate)
     size_t oldTgtWord = sentence->tgt[sentence->align[sentPos.second]];
     
     // discount removed alignment link
-    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].erase(oldTgtWord);
+    if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].Erase(oldTgtWord);
     counts[oldTgtWord]--;
 
     // generate a sample

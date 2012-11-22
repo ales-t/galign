@@ -47,13 +47,13 @@ public:
     return a->second;
   }
 
-  bool contains(const KeyT &key) const
+  bool Contains(const KeyT &key) const
   {
     typename InternalHashType::const_accessor a;
     return internalHash.find(a, key);
   }
 
-  void erase(const KeyT &key)
+  void Erase(const KeyT &key)
   {
     typename InternalHashType::accessor a;
     internalHash.find(a, key);
