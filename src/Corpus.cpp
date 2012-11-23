@@ -15,8 +15,6 @@ using namespace boost::algorithm;
 Corpus::Corpus(const string &fileName)
 {
   filtering_istream *in = InitInput(fileName);
-  if (! in->good())
-    Die("Cannot read input file: " + fileName);
   Read(*in);
 }
 

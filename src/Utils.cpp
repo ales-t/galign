@@ -19,7 +19,10 @@ filtering_istream *InitInput(const string &fileName)
   } else {
     if (ends_with(fileName, ".gz"))
       in->push(gzip_decompressor());
-    in->push(file_source(fileName.c_str()));
+    file_source fileSrc(fileName.c_str());
+    if (! fileSrc.is_open())
+      Die("Cannot read file: " + fileName);
+    in->push(fileSrc);
   }
   return in;
 }
@@ -32,7 +35,10 @@ filtering_ostream *InitOutput(const string &fileName)
   } else {
     if (ends_with(fileName, ".gz"))
       out->push(gzip_compressor());
-    out->push(file_sink(fileName.c_str()));
+    file_sink fileSink(fileName.c_str());
+    if (! fileSink.is_open())
+      Die("Cannot write to file: " + fileName);
+    out->push(fileSink);
   }
   return out;
 }
