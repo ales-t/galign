@@ -6,12 +6,13 @@
 #include <vector>
 
 #include <boost/random.hpp>
+#include <tbb/atomic.h>
 
 #include "Corpus.hpp"
 #include "Utils.hpp"
 
-typedef std::vector<int> CountType;
-typedef std::vector<SafeHash<size_t, int> > JointCountType;
+typedef std::vector<tbb::atomic<int> > CountType;
+typedef std::vector<SafeHash<size_t, tbb::atomic<int> > > JointCountType;
 
 class Model1
 {

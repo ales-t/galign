@@ -18,13 +18,15 @@ HMM::HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const
 {
   aggregateCounts.resize(corpus->GetTotalTargetTypes());
   aggregateJoint.resize(corpus->GetTotalSourceTypes());
+  distortionCounts.resize(2*BUCKET_LIMIT + 1);
+  aggregateDistortion.resize(2*BUCKET_LIMIT + 1);
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
     for (size_t i = 0; i < sentence->src.size(); i++) {
       int distortion = 1;
       if (i > 0)
         distortion = sentence->align[i] - sentence->align[i - 1];
-      distortionCounts[distortion]++;
+      distortionCounts[GetBucket(distortion)]++;
     }
   }
   order = corpus->GetTokensToSentences();
@@ -46,61 +48,16 @@ void HMM::RunIteration(bool doAggregate)
     // discount removed alignment link
     if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].Erase(oldTgtWord);
     counts[oldTgtWord]--;
-    int inDistortion = 1;
-    if (sentPos.second > 0) {
-      inDistortion = sentence->align[sentPos.second] - sentence->align[sentPos.second - 1];
-    }
-    distortionCounts[inDistortion] = max(0, distortionCounts[inDistortion] - 1);
-    int outDistortion = 1;
-    if (sentPos.second < sentence->src.size() - 1) {
-      outDistortion = sentence->align[sentPos.second + 1] - sentence->align[sentPos.second];
-    }
-    distortionCounts[outDistortion] = max(0, distortionCounts[outDistortion] - 1);
+    size_t inDistBucket = GetBucket(GetInputDistortion(sentence, sentPos.second,
+          sentence->align[sentPos.second]));
+    size_t outDistBucket = GetBucket(GetOutputDistortion(sentence, sentPos.second,
+          sentence->align[sentPos.second]));
+    distortionCounts[inDistBucket] = max(0, distortionCounts[inDistBucket] - 1);
+    distortionCounts[outDistBucket] = max(0, distortionCounts[outDistBucket] - 1);
 
     // generate a sample
-    LogDistribution lexicalProbs;
-    LogDistribution inDistortionPotentials;
-    LogDistribution outDistortionPotentials;
-
-    for (size_t i = 0; i < sentence->tgt.size(); i++) {
-      size_t tgt = sentence->tgt[i];
-      float pairAlpha = alpha;
-      float normAlpha = alpha * corpus->GetTotalSourceTokens();
-      if (srcWord == tgt)
-        pairAlpha = cognateAlpha;
-      if (corpus->HasCognate(tgt))
-        normAlpha += cognateAlpha - alpha;
-
-      float logLexProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
-      lexicalProbs.Add(logLexProb);
-      int inDistortion = 1;
-      if (sentPos.second > 0) {
-        inDistortion = i - sentence->align[sentPos.second - 1];
-      }
-      int outDistortion = 1;
-      if (sentPos.second < sentence->src.size() - 1) {
-        outDistortion = sentence->align[sentPos.second + 1] - i;
-      }
-      int inDistCount = 0;
-      if (distortionCounts.Contains(inDistortion))
-        inDistCount = distortionCounts[inDistortion];
-      inDistortionPotentials.Add(log(inDistCount + distAlpha));
-      int outDistCount = 0;
-      if (distortionCounts.Contains(outDistortion))
-        outDistCount = distortionCounts[outDistortion];
-      outDistortionPotentials.Add(log(outDistCount + distAlpha));
-    }
-
-    // get distribution parameters
-    vector<float> distParams;
-    distParams.reserve(sentence->tgt.size());
-    lexicalProbs.Normalize();
-    inDistortionPotentials.Normalize();
-    outDistortionPotentials.Normalize();
-    for (size_t i = 0; i < sentence->tgt.size(); i++) {
-      distParams.push_back(exp(lexicalProbs[i] + inDistortionPotentials[i] + outDistortionPotentials[i]));
-    }
-
+    vector<float> distParams = GetDistribution(sentence, sentPos.second, counts, 
+        jointCounts, distortionCounts);
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 
@@ -108,21 +65,15 @@ void HMM::RunIteration(bool doAggregate)
     sentence->align[sentPos.second] = sample;
     jointCounts[srcWord][sentence->tgt[sample]]++;
     counts[sentence->tgt[sample]]++;
-    inDistortion = 1;
-    outDistortion = 1;
-    if (sentPos.second > 0) {
-      inDistortion = sample - sentence->align[sentPos.second - 1];
-    }
-    if (sentPos.second < sentence->src.size() - 1) {
-      outDistortion = sentence->align[sentPos.second + 1] - sample;
-    }
-    distortionCounts[inDistortion]++;
-    distortionCounts[outDistortion]++;
+    inDistBucket = GetBucket(GetInputDistortion(sentence, sentPos.second, sample));
+    outDistBucket = GetBucket(GetOutputDistortion(sentence, sentPos.second, sample));
+    distortionCounts[inDistBucket]++;
+    distortionCounts[outDistBucket]++;
     if (doAggregate) {
       aggregateJoint[srcWord][sentence->tgt[sample]]++;
       aggregateCounts[sentence->tgt[sample]]++;
-      aggregateDistortion[inDistortion]++;
-      aggregateDistortion[outDistortion]++;
+      aggregateDistortion[inDistBucket]++;
+      aggregateDistortion[outDistBucket]++;
     }
   }
 }
@@ -130,58 +81,19 @@ void HMM::RunIteration(bool doAggregate)
 vector<AlignmentType> HMM::GetAggregateAlignment()
 {
   vector<AlignmentType> out;
-//  BOOST_FOREACH(DistortionCountType::value_type dist, aggregateDistortion) {
-//    cerr << dist.first << ":\t" << dist.second << endl;
-//  }
   int lineNum = 0;
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     lineNum++;
     AlignmentType aggregAlign(sentence->src.size());
     for (size_t i = 0; i < sentence->src.size(); i++) {
-      LogDistribution lexicalProbs;
-      LogDistribution inDistortionPotentials;
-      LogDistribution outDistortionPotentials;
-
-      for (size_t j = 0; j < sentence->tgt.size(); j++) {
-        float pairAlpha = alpha;
-        float normAlpha = alpha * corpus->GetTotalSourceTokens();
-        if (sentence->src[i] == sentence->tgt[j])
-          pairAlpha = cognateAlpha;
-        if (corpus->HasCognate(sentence->tgt[j]))
-          normAlpha += cognateAlpha - alpha;
-
-        float logLexProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
-          - log(aggregateCounts[sentence->tgt[j]] + normAlpha);
-        lexicalProbs.Add(logLexProb);
-
-        int inDistortion = 1;
-        if (i > 0) {
-          inDistortion = j - sentence->align[i - 1];
-        }
-        int outDistortion = 1;
-        if (i < sentence->src.size() - 1) {
-          outDistortion = sentence->align[i + 1] - j;
-        }
-        int inDistCount = 0;
-        if (aggregateDistortion.Contains(inDistortion))
-          inDistCount = aggregateDistortion[inDistortion];
-        inDistortionPotentials.Add(log(inDistCount + distAlpha));
-        int outDistCount = 0;
-        if (aggregateDistortion.Contains(outDistortion))
-          outDistCount = aggregateDistortion[outDistortion];
-        outDistortionPotentials.Add(log(outDistCount + distAlpha));
-      }
-
-      lexicalProbs.Normalize();
-      inDistortionPotentials.Normalize();
-      outDistortionPotentials.Normalize();
+      vector<float> dist = GetDistribution(sentence, i, aggregateCounts,
+          aggregateJoint, aggregateDistortion);
       int best = -1;
       float bestProb = 0;
       for (size_t j = 0; j < sentence->tgt.size(); j++) {
-        float prob = (exp(lexicalProbs[j] + inDistortionPotentials[j] + outDistortionPotentials[j]));
-        if (prob > bestProb) {
+        if (dist[j] > bestProb) {
           best = j;
-          bestProb = prob;
+          bestProb = dist[j];
         }      
       }
       if (best == -1) {
@@ -191,6 +103,41 @@ vector<AlignmentType> HMM::GetAggregateAlignment()
       aggregAlign[i] = best;
     }
     out.push_back(aggregAlign);
+  }
+  return out;
+}
+
+std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition, CountType &a_counts,
+    JointCountType &a_jointCounts, DistortionCountType &a_distCounts)
+{
+  LogDistribution lexicalProbs;
+  LogDistribution inDistortionPotentials;
+  LogDistribution outDistortionPotentials;
+
+  for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
+    float pairAlpha = alpha;
+    float normAlpha = alpha * corpus->GetTotalSourceTokens();
+    if (sentence->src[srcPosition] == sentence->tgt[tgtPosition])
+      pairAlpha = cognateAlpha;
+    if (corpus->HasCognate(sentence->tgt[tgtPosition]))
+      normAlpha += cognateAlpha - alpha;
+
+    float logLexProb = log(a_jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + pairAlpha)
+      - log(a_counts[sentence->tgt[tgtPosition]] + normAlpha);
+    lexicalProbs.Add(logLexProb);
+
+    size_t inDistBucket = GetBucket(GetInputDistortion(sentence, srcPosition, tgtPosition));
+    size_t outDistBucket = GetBucket(GetOutputDistortion(sentence, srcPosition, tgtPosition));
+    inDistortionPotentials.Add(log(a_distCounts[inDistBucket] + distAlpha));
+    outDistortionPotentials.Add(log(a_distCounts[outDistBucket] + distAlpha));
+  }
+
+  lexicalProbs.Normalize();
+  inDistortionPotentials.Normalize();
+  outDistortionPotentials.Normalize();
+  vector<float> out(sentence->tgt.size());
+  for (size_t i = 0; i < sentence->tgt.size(); i++) {
+    out[i] = exp(lexicalProbs[i] + inDistortionPotentials[i] + outDistortionPotentials[i]);
   }
   return out;
 }
