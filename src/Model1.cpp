@@ -49,7 +49,7 @@ void Model1::RunIteration(bool doAggregate)
     if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].Erase(oldTgtWord);
     counts[oldTgtWord]--;
 
-    // generate a sample
+    // calculate distribution parameters
     LogDistribution lexicalProbs;
     BOOST_FOREACH(size_t tgt, sentence->tgt) {
       float pairAlpha = alpha;
@@ -58,13 +58,13 @@ void Model1::RunIteration(bool doAggregate)
         pairAlpha = cognateAlpha;
       if (corpus->HasCognate(tgt))
         normAlpha += cognateAlpha - alpha;
-
-      //float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
       float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
       lexicalProbs.Add(logProb);
     }
     lexicalProbs.Normalize();
     vector<float> distParams = lexicalProbs.Exp();
+
+    // generate a sample
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 
@@ -83,6 +83,9 @@ vector<AlignmentType> Model1::GetAggregateAlignment()
 {
   vector<AlignmentType> out;
   int lineNum = 0;
+  // aligns each word to the most probable counterpart
+  // (cummulated counts from previous iterations are used to estimate
+  // lexical probabilities)
   BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
     lineNum++;
     AlignmentType aggregAlign(sentence->src.size());

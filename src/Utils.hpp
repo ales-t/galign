@@ -30,6 +30,12 @@ inline void Die(const std::string &msg)
   exit(1);
 }
 
+// a thin wrapper around TBB concurrent hash
+// implements [] operator (behaves the same way as in std::map),
+// simple querying of existence and deletion
+//
+// this simplicity is at the expense of using RW locks everywhere
+// (read-only locks did not seem to improve speed though)
 template <typename KeyT, typename ValueT>
 class SafeHash
 {
@@ -64,6 +70,7 @@ private:
   InternalHashType internalHash;
 };
 
+// a categorical/discrete distribution in log-space
 class LogDistribution
 {
 public:
@@ -72,13 +79,15 @@ public:
     maxProb = -std::numeric_limits<float>::infinity();
   }
 
+  // add a new value
   void Add(float logProb)
   {
     logProbs.push_back(logProb);
     maxProb = std::max(maxProb, logProb);
   }
 
-  std::vector<float> Exp()
+  // return all probabilities, exponentiated
+  std::vector<float> Exp() const
   {
     std::vector<float> out;
     out.reserve(logProbs.size());
@@ -88,8 +97,10 @@ public:
     return out;
   }
 
-  float operator[] (int pos) { return logProbs[pos]; }
+  // get the probability of pos-th element
+  float operator[] (int pos) const { return logProbs[pos]; }
 
+  // normalize the distribution (in-place)
   void Normalize()
   {
     float normConst = 0;
@@ -103,11 +114,18 @@ public:
   }
 
 private:
-  std::vector<float> logProbs;
-  float maxProb;
+  std::vector<float> logProbs; // log probabilities
+  float maxProb; // highest probability in the distribution, used in normalization
 };
 
+// initialize input stream, supports plain and gzipped files
+// (distinguished by file extension .gz)
+// empty fileName is interpreted as STDIN
 boost::iostreams::filtering_istream *InitInput(const std::string &fileName = "");
+
+// initialize output stream, supports plain and gzipped files
+// (distinguished by file extension .gz)
+// empty fileName is interpreted as STDOUT
 boost::iostreams::filtering_ostream *InitOutput(const std::string &fileName = "");
 
 #endif // UTILS_HPP_
