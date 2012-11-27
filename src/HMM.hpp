@@ -27,15 +27,14 @@ public:
 private:
   std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition, CountType &a_counts,
     JointCountType &a_jointCounts, DistortionCountType &a_distCounts);
-  int GetInputDistortion(Sentence *sentence, size_t srcPosition, size_t tgtPosition);
-  int GetOutputDistortion(Sentence *sentence, size_t srcPosition, size_t tgtPosition);
+  void UpdateTransition(DistortionCountType &distCounts, const Sentence *sentence, size_t srcPos,
+      int diff);
   int GetBucket(int distortion)
   {
     if (distortion > BUCKET_LIMIT) distortion = BUCKET_LIMIT;
     if (distortion < -BUCKET_LIMIT) distortion = -BUCKET_LIMIT;
     return BUCKET_LIMIT + distortion;
   }
-
 
   SentenceMappingType order;
   boost::random::mt19937 generator;

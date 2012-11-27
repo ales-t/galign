@@ -97,6 +97,8 @@ public:
     return out;
   }
 
+  size_t GetSize() const { return logProbs.size(); }
+
   // get the probability of pos-th element
   float operator[] (int pos) const { return logProbs[pos]; }
 

@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   // initialize IBM Model 1
   Model1 model1(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha());
   model1.AlignRandomly();
-  AlignmentModel &lastModel = model1;
+  AlignmentModel *lastModel = &model1;
   Log("Initialized Model1");
 
   // run Model 1 iterations
@@ -46,14 +46,14 @@ int main(int argc, char **argv)
 
   // initialize HMM model, use counts from IBM Model 1
   if (opts.GetHMMIterations() > 0) {
-    HMM hmmModel(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha(),
+    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha(),
         opts.GetDistortionAlpha(), model1.GetCounts(), model1.GetJointCounts());
     lastModel = hmmModel;
     Log("Initialized HMM");
 
     // run HMM model iterations
     for (size_t i = 1; i <= opts.GetHMMIterations(); i++) {
-      hmmModel.RunIteration(i >= opts.GetHMMAggregateFrom());
+      hmmModel->RunIteration(i >= opts.GetHMMAggregateFrom());
       Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
     }
   }
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   Writer writer(corpus);
   string suffix = opts.GetCompress() ? ".gz" : "";
   writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
-  vector<AlignmentType> aggregAlign = lastModel.GetAggregateAlignment();
+  vector<AlignmentType> aggregAlign = lastModel->GetAggregateAlignment();
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
       + suffix, aggregAlign);
   writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate.giza"
