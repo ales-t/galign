@@ -16,8 +16,10 @@ public:
 
   bool GetHelp()                { return help; }
   bool GetCompress()            { return compress; }
-  size_t GetIterations()        { return iterations; }
-  size_t GetAggregateFrom()     { return aggregateFrom; }
+  size_t GetIBM1Iterations()    { return ibm1Iterations; }
+  size_t GetIBM1AggregateFrom() { return ibm1AggregateFrom; }
+  size_t GetHMMIterations()     { return hmmIterations; }
+  size_t GetHMMAggregateFrom()  { return hmmAggregateFrom; }
   float GetLexicalAlpha()       { return alphaLex; }
   float GetDistortionAlpha()    { return alphaDist; }
   float GetCognateAlpha()       { return alphaLex * cognateBoost; }
@@ -29,7 +31,8 @@ private:
   Options(Options const &);
   Options &operator=(Options const &);
 
-  size_t iterations, aggregateFrom;
+  size_t ibm1Iterations, ibm1AggregateFrom;
+  size_t hmmIterations, hmmAggregateFrom;
   float alphaLex, alphaDist, cognateBoost;
   std::string outputPrefix, inputFile;
   bool compress, help;

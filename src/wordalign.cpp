@@ -30,8 +30,8 @@ int main(int argc, char **argv)
   Log("Initialized Model1");
 
   // run Model 1 iterations
-  for (size_t i = 1; i <= opts.GetIterations(); i++) {
-    model1.RunIteration(i >= opts.GetAggregateFrom());
+  for (size_t i = 1; i <= opts.GetIBM1Iterations(); i++) {
+    model1.RunIteration(i >= opts.GetIBM1AggregateFrom());
     Log("Model1: Finished iteration " + boost::lexical_cast<string>(i));
   }
 
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
   Log("Initialized HMM");
 
   // run HMM model iterations
-  for (size_t i = 1; i <= opts.GetIterations(); i++) {
-    hmmModel.RunIteration(i >= opts.GetAggregateFrom());
+  for (size_t i = 1; i <= opts.GetHMMIterations(); i++) {
+    hmmModel.RunIteration(i >= opts.GetHMMAggregateFrom());
     Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
   }
 

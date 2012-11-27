@@ -15,9 +15,13 @@ void Options::ParseOptions(int argc, char **argv)
   opts.add_options()
     ("output-prefix,o", value<string>(&outputPrefix)->default_value("align"),
      "Prefix of created output files.")
-    ("aggregate-from,g", value<size_t>(&aggregateFrom)->default_value(10),
+    ("ibm1-aggregate-from", value<size_t>(&ibm1AggregateFrom)->default_value(11),
      "Iteration from which samples are aggregated for the final word alignment.")
-    ("iterations,t", value<size_t>(&iterations)->default_value(20),
+    ("ibm1-iterations", value<size_t>(&ibm1Iterations)->default_value(10),
+     "Number of iterations.")
+    ("hmm-aggregate-from", value<size_t>(&hmmAggregateFrom)->default_value(10),
+     "Iteration from which samples are aggregated for the final word alignment.")
+    ("hmm-iterations", value<size_t>(&hmmIterations)->default_value(20),
      "Number of iterations.")
     ("cognate-boost,b", value<float>(&cognateBoost)->default_value(1),
      "Prior co-efficient for cognate words (higher number implies stronger prior).")
