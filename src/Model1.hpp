@@ -10,12 +10,13 @@
 
 #include "Corpus.hpp"
 #include "Utils.hpp"
+#include "AlignmentModel.hpp"
 
 typedef std::vector<tbb::atomic<int> > CountType;
 typedef std::vector<SafeHash<size_t, tbb::atomic<int> > > JointCountType;
 
 // estimate IBM Model 1 using Gibbs sampling
-class Model1
+class Model1 : public AlignmentModel
 {
 public:
   Model1(Corpus *corpus, float alpha, float cognateAlpha) :
@@ -38,7 +39,7 @@ public:
   void RunIteration(bool doAggregate);
 
   // get word alignment aggregated over 
-  std::vector<AlignmentType> GetAggregateAlignment();
+  virtual std::vector<AlignmentType> GetAggregateAlignment();
   
   // get counts and joint counts, used as initial parameters by
   // subsequent models

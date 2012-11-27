@@ -30,12 +30,15 @@ void Writer::WriteAlignmentLine(filtering_ostream &out, const WordSequenceType &
   const WordSequenceType &tgt, const AlignmentType &align, bool gizaFormat)
 {
   for (size_t i = 0; i < src.size(); i++) {
-    if (gizaFormat)
-      out << i << "-" << align[i];
-    else
-      out << corpus->GetSrcWord(src[i]) << "{" << corpus->GetTgtWord(tgt[align[i]]) << "}";
-    if (i != src.size() - 1)
-      out << " ";
+    if (align[i] != 0) {
+      if (gizaFormat) {
+        out << i << "-" << align[i];
+      } else {
+        out << corpus->GetSrcWord(src[i]) << "{" << corpus->GetTgtWord(tgt[align[i]]) << "}";
+      }
+      if (i != src.size() - 1)
+        out << " ";
+    }
   }
   out << "\n";
 }

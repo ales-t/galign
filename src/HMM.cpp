@@ -139,3 +139,31 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition, 
   }
   return out;
 }
+
+int HMM::GetInputDistortion(Sentence *sentence, size_t srcPosition, size_t tgtPosition) 
+{
+  if (tgtPosition == 0) return 0;
+  int inDistortion = 1;
+  while (srcPosition > 0) {
+    size_t prev = sentence->align[--srcPosition];
+    if (prev != 0) {
+      inDistortion = (int)tgtPosition - (int)prev;
+      break;
+    }
+  }
+  return inDistortion;
+}
+
+int HMM::GetOutputDistortion(Sentence *sentence, size_t srcPosition, size_t tgtPosition) 
+{
+  if (tgtPosition == 0) return 0;
+  int outDistortion = 1;
+  while (srcPosition < sentence->src.size() - 1) {
+    size_t next = sentence->align[++srcPosition];
+    if (next != 0) {
+      outDistortion = (int)next - (int)tgtPosition;
+      break;
+    }
+  }
+  return outDistortion;
+}

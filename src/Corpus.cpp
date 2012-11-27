@@ -26,6 +26,7 @@ void Corpus::Read(filtering_istream &in)
   string line;
   int lineNum = 0;
   totalSourceTokens = 0;
+  size_t nullIndex = GetIndex(tgtIndex, "<NULL>", true);
   while (getline(in, line)) {
     lineNum++;
     vector<string> sides;
@@ -39,7 +40,8 @@ void Corpus::Read(filtering_istream &in)
     split(src, sides[0], is_any_of(" "));
     split(tgt, sides[1], is_any_of(" "));
     sentence->src.resize(src.size());
-    sentence->tgt.resize(tgt.size());
+    sentence->tgt.resize(tgt.size() + 1);
+    sentence->tgt[0] = nullIndex;
     if (src.empty() || tgt.empty())
       Warn("Sentence is empty: " + lexical_cast<string>(lineNum));
 
@@ -53,7 +55,7 @@ void Corpus::Read(filtering_istream &in)
     // populate the target side, add words to index
     for (size_t i = 0; i < tgt.size(); i++) {
       size_t tgtWordIndex = GetIndex(tgtIndex, tgt[i], true);
-      sentence->tgt[i] = tgtWordIndex;
+      sentence->tgt[i + 1] = tgtWordIndex; // there is NULL token on position 0
       // cognate?
       if (srcIndex.left.find(tgt[i]) != srcIndex.left.end())
         cognates.insert(tgtWordIndex);
