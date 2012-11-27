@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <boost/lexical_cast.hpp>
+#include <omp.h>
 
 #include "Options.hpp"
 #include "Corpus.hpp"
@@ -19,6 +20,12 @@ int main(int argc, char **argv)
   // parse options
   Options &opts = Options::Instance();
   opts.ParseOptions(argc, argv);
+  int cores = opts.GetCores();
+  if (cores == 0) {
+    cores = omp_get_num_procs();
+  }
+  omp_set_num_threads(cores);
+  Log("Using " + boost::lexical_cast<string>(cores) + " CPU cores");
 
   // load corpus
   Corpus *corpus = new Corpus(opts.GetInputFile());

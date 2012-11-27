@@ -34,7 +34,9 @@ void Options::ParseOptions(int argc, char **argv)
     ("help,h", value<bool>(&help)->zero_tokens()->default_value(false),
      "Print this message.")
     ("compress,c", value(&compress)->zero_tokens()->default_value(false),
-     "Gzip output files.");
+     "Gzip output files.")
+    ("cores", value<size_t>(&cores)->default_value(0),
+     "The number of CPU cores to use, default 0 means autodetect.");
   try {
     variables_map vmap;
     store(parse_command_line(argc, argv, opts), vmap);

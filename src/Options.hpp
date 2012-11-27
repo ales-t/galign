@@ -20,6 +20,7 @@ public:
   size_t GetIBM1AggregateFrom() { return ibm1AggregateFrom; }
   size_t GetHMMIterations()     { return hmmIterations; }
   size_t GetHMMAggregateFrom()  { return hmmAggregateFrom; }
+  size_t GetCores()             { return cores; }
   float GetLexicalAlpha()       { return alphaLex; }
   float GetDistortionAlpha()    { return alphaDist; }
   float GetCognateAlpha()       { return alphaLex * cognateBoost; }
@@ -31,8 +32,8 @@ private:
   Options(Options const &);
   Options &operator=(Options const &);
 
-  size_t ibm1Iterations, ibm1AggregateFrom;
-  size_t hmmIterations, hmmAggregateFrom;
+  size_t ibm1Iterations, ibm1AggregateFrom,
+         hmmIterations, hmmAggregateFrom, cores;
   float alphaLex, alphaDist, cognateBoost;
   std::string outputPrefix, inputFile;
   bool compress, help;
