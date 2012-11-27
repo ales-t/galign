@@ -3,8 +3,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/random.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
 
 using namespace std;

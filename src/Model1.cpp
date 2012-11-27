@@ -4,9 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/random.hpp>
 #include <boost/foreach.hpp>
-#include <tbb/concurrent_vector.h>
 #include <cmath>
-#include <omp.h>
 
 using namespace std;
 using namespace boost;
