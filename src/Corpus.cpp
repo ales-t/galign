@@ -56,9 +56,6 @@ void Corpus::Read(filtering_istream &in)
     for (size_t i = 0; i < tgt.size(); i++) {
       size_t tgtWordIndex = GetIndex(tgtIndex, tgt[i], true);
       sentence->tgt[i + 1] = tgtWordIndex; // there is NULL token on position 0
-      // cognate?
-      if (srcIndex.left.find(tgt[i]) != srcIndex.left.end())
-        cognates.insert(tgtWordIndex);
     }
     sentences.push_back(sentence);
   }
