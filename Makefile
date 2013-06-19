@@ -1,5 +1,5 @@
 # if your Boost is located elsewhere, set it here or use make BOOST_PATH=/your/boost
-BOOST_PATH = /usr
+BOOST_PATH ?= /usr/
 OBJDIR = bin
 SRCDIR = src
 

@@ -33,9 +33,6 @@ inline void Die(const std::string &msg)
 // a thin wrapper around TBB concurrent hash
 // implements [] operator (behaves the same way as in std::map),
 // simple querying of existence and deletion
-//
-// this simplicity is at the expense of using RW locks everywhere
-// (read-only locks did not seem to improve speed though)
 template <typename KeyT, typename ValueT>
 class SafeHash
 {
@@ -43,6 +40,13 @@ class SafeHash
 
 public:
   typedef ValueT value_type;
+
+  const ValueT &operator[](const KeyT &key) const
+  {
+    typename InternalHashType::const_accessor a;
+    internalHash.find(a, key);
+    return a->second;
+  }
 
   ValueT &operator[](const KeyT &key)
   {
