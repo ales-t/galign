@@ -30,7 +30,7 @@ void Model1::AlignRandomly()
   }
 }
 
-void Model1::RunIteration(bool doAggregate)
+void Model1::RunIteration(double temp)
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());
@@ -50,13 +50,8 @@ void Model1::RunIteration(bool doAggregate)
     // calculate distribution parameters
     LogDistribution lexicalProbs;
     BOOST_FOREACH(size_t tgt, sentence->tgt) {
-      float pairAlpha = alpha;
-      float normAlpha = alpha * corpus->GetTotalSourceTypes();
-      if (srcWord == tgt)
-        pairAlpha = cognateAlpha;
-      if (corpus->HasCognate(tgt))
-        normAlpha += cognateAlpha - alpha;
-      float logProb = log(jointCounts[srcWord][tgt] + pairAlpha) - log(counts[tgt] + normAlpha);
+      float logProb = log(jointCounts[srcWord][tgt] + alpha)
+        - log(counts[tgt] + alpha * corpus->GetTotalSourceTypes());
       lexicalProbs.Add(logProb);
     }
     lexicalProbs.Normalize();
@@ -70,48 +65,5 @@ void Model1::RunIteration(bool doAggregate)
     sentence->align[sentPos.second] = sample;
     jointCounts[srcWord][sentence->tgt[sample]]++;
     counts[sentence->tgt[sample]]++;
-    if (doAggregate) {
-      aggregateJoint[srcWord][sentence->tgt[sample]]++;
-      aggregateCounts[sentence->tgt[sample]]++;
-    }
   }
-}
-
-vector<AlignmentType> Model1::GetAggregateAlignment()
-{
-  vector<AlignmentType> out;
-  int lineNum = 0;
-  // aligns each word to the most probable counterpart
-  // (cummulated counts from previous iterations are used to estimate
-  // lexical probabilities)
-  BOOST_FOREACH(Sentence *sentence, corpus->GetSentences()) {
-    lineNum++;
-    AlignmentType aggregAlign(sentence->src.size());
-    for (size_t i = 0; i < sentence->src.size(); i++) {
-      int best = -1;
-      float bestProb = -numeric_limits<float>::infinity();
-      for (size_t j = 0; j < sentence->tgt.size(); j++) {
-        float pairAlpha = alpha;
-        float normAlpha = alpha * corpus->GetTotalSourceTokens();
-        if (sentence->src[i] == sentence->tgt[j])
-          pairAlpha = cognateAlpha;
-        if (corpus->HasCognate(sentence->tgt[j]))
-          normAlpha += cognateAlpha - alpha;
-
-        float logProb = log(aggregateJoint[sentence->src[i]][sentence->tgt[j]] + pairAlpha)
-          - log(aggregateCounts[sentence->tgt[j]] + normAlpha);
-        if (logProb > bestProb) {
-          best = j;
-          bestProb = logProb;
-        }      
-      }
-      if (best == -1) {
-        Die("Zero probability for word '" + corpus->GetSrcWord(sentence->src[i]) +
-            "' in sentence " + lexical_cast<string>(lineNum));
-      }
-      aggregAlign[i] = best;
-    }
-    out.push_back(aggregAlign);
-  }
-  return out;
 }

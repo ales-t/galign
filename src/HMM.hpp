@@ -19,10 +19,9 @@ typedef std::vector<tbb::atomic<int> > DistortionCountType;
 class HMM : public AlignmentModel
 {
 public:
-  HMM(Corpus *corpus, float alpha, float cognateAlpha, float distAlpha, const CountType &prevCounts,
+  HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
-  void RunIteration(bool doAggregate);
-  virtual std::vector<AlignmentType> GetAggregateAlignment();
+  void RunIteration(double temp);
 
 private:
   std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition, CountType &a_counts,
@@ -39,10 +38,10 @@ private:
   SentenceMappingType order;
   boost::random::mt19937 generator;
   Corpus *corpus;
-  float alpha, cognateAlpha, distAlpha;
-  CountType counts, aggregateCounts;
-  JointCountType jointCounts, aggregateJoint; 
-  DistortionCountType distortionCounts, aggregateDistortion;
+  float alpha, distAlpha;
+  CountType counts;
+  JointCountType jointCounts; 
+  DistortionCountType distortionCounts;
 };
 
 #endif // HMM_HPP_

@@ -33,41 +33,37 @@ int main(int argc, char **argv)
   Log("Corpus loaded.");
 
   // initialize IBM Model 1
-  Model1 model1(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha());
+  Model1 model1(corpus, opts.GetLexicalAlpha());
   model1.AlignRandomly();
   AlignmentModel *lastModel = &model1;
+  Annealer model1Annealer(opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom());
   Log("Initialized Model1");
 
   // run Model 1 iterations
   for (size_t i = 1; i <= opts.GetIBM1Iterations(); i++) {
-    model1.RunIteration(i >= opts.GetIBM1AggregateFrom());
+    model1.RunIteration(model1Annealer.GetTemp(i));
     Log("Model1: Finished iteration " + boost::lexical_cast<string>(i));
   }
 
   // initialize HMM model, use counts from IBM Model 1
   if (opts.GetHMMIterations() > 0) {
-    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetCognateAlpha(),
-        opts.GetDistortionAlpha(), model1.GetCounts(), model1.GetJointCounts());
+    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetDistortionAlpha(),
+        model1.GetCounts(), model1.GetJointCounts());
     lastModel = hmmModel;
+    Annealer hmmAnnealer(opts.GetHMMIterations(), opts.GetHMMCoolingFrom());
     Log("Initialized HMM");
 
     // run HMM model iterations
     for (size_t i = 1; i <= opts.GetHMMIterations(); i++) {
-      hmmModel->RunIteration(i >= opts.GetHMMAggregateFrom());
+      hmmModel->RunIteration(hmmAnnealer.GetTemp(i));
       Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
     }
   }
 
   // output last alignment and aggregate alignment
-  Log("Writing alignments to disk.");
+  Log("Writing alignments.");
   Writer writer(corpus);
-  string suffix = opts.GetCompress() ? ".gz" : "";
-  writer.WriteAlignment(opts.GetOutputPrefix() + ".last" + suffix);
-  vector<AlignmentType> aggregAlign = lastModel->GetAggregateAlignment();
-  writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate"
-      + suffix, aggregAlign);
-  writer.WriteAlignment(opts.GetOutputPrefix() + ".aggregate.giza"
-      + suffix, aggregAlign, true);
+  writer.WriteAlignment(opts.GetOutputFile(), opts.GetMosesFormat());
   Log("Done.");
 
   return 0;

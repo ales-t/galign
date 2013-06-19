@@ -74,6 +74,31 @@ private:
   InternalHashType internalHash;
 };
 
+// crude, simple simulated annealing
+// decreases temperature once cooling starts
+class Annealer
+{
+public:
+  Annealer(size_t total, size_t coolingFrom) : coolingFrom(coolingFrom)
+  {
+    step = 1.0 / (1 + total - coolingFrom);
+  }
+
+  double GetTemp(size_t iter)
+  {
+    if (iter <= coolingFrom) {
+      return 1;
+    } else {
+      return std::max(step, 1 - (iter - coolingFrom)*step);
+    }
+  }
+
+private:
+  size_t coolingFrom;
+  double step;
+};
+
+
 // a categorical/discrete distribution in log-space
 class LogDistribution
 {

@@ -19,14 +19,12 @@ typedef std::vector<SafeHash<size_t, tbb::atomic<int> > > JointCountType;
 class Model1 : public AlignmentModel
 {
 public:
-  Model1(Corpus *corpus, float alpha, float cognateAlpha) :
-    corpus(corpus), alpha(alpha), cognateAlpha(cognateAlpha)
+  Model1(Corpus *corpus, float alpha) :
+    corpus(corpus), alpha(alpha)
   {
     order = corpus->GetTokensToSentences();
     counts.resize(corpus->GetTotalTargetTypes());
-    aggregateCounts.resize(corpus->GetTotalTargetTypes());
     jointCounts.resize(corpus->GetTotalSourceTypes());
-    aggregateJoint.resize(corpus->GetTotalSourceTypes());
   }
 
   // align each source word in corpus to a random target word,
@@ -34,13 +32,8 @@ public:
   void AlignRandomly();
 
   // run one iteration of Gibbs sampling over the corpus
-  // if doAggregate, the samples are cummulated in aggregate counts
-  // (this is used for more robust final word alignment)
-  void RunIteration(bool doAggregate);
+  void RunIteration(double temp);
 
-  // get word alignment aggregated over 
-  virtual std::vector<AlignmentType> GetAggregateAlignment();
-  
   // get counts and joint counts, used as initial parameters by
   // subsequent models
   const CountType &GetCounts()           { return counts; }
@@ -53,11 +46,11 @@ private:
   // order of words (pairs of <sentence, word position> in corpus)
   SentenceMappingType order;
   Corpus *corpus;
-  JointCountType jointCounts, aggregateJoint; 
-  CountType counts, aggregateCounts;
+  JointCountType jointCounts; 
+  CountType counts;
 
-  // priors on alignment, prior for cognate words can be boosted
-  float alpha, cognateAlpha;
+  // prior on alignment
+  float alpha;
 };
 
 #endif // MODEL1_HPP_

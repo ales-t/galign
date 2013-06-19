@@ -15,16 +15,15 @@ public:
   void ParseOptions(int argc, char **argv);
 
   bool GetHelp()                { return help; }
-  bool GetCompress()            { return compress; }
+  bool GetMosesFormat()         { return mosesFormat; }
   size_t GetIBM1Iterations()    { return ibm1Iterations; }
-  size_t GetIBM1AggregateFrom() { return ibm1AggregateFrom; }
+  size_t GetIBM1CoolingFrom()   { return ibm1CoolingFrom; }
   size_t GetHMMIterations()     { return hmmIterations; }
-  size_t GetHMMAggregateFrom()  { return hmmAggregateFrom; }
+  size_t GetHMMCoolingFrom()    { return hmmCoolingFrom; }
   size_t GetCores()             { return cores; }
   float GetLexicalAlpha()       { return alphaLex; }
   float GetDistortionAlpha()    { return alphaDist; }
-  float GetCognateAlpha()       { return alphaLex * cognateBoost; }
-  std::string GetOutputPrefix() { return outputPrefix; }
+  std::string GetOutputFile()   { return outputFile; }
   std::string GetInputFile()    { return inputFile; }
 
 private:
@@ -32,11 +31,11 @@ private:
   Options(Options const &);
   Options &operator=(Options const &);
 
-  size_t ibm1Iterations, ibm1AggregateFrom,
-         hmmIterations, hmmAggregateFrom, cores;
+  size_t ibm1Iterations, ibm1CoolingFrom,
+         hmmIterations, hmmCoolingFrom, cores;
   float alphaLex, alphaDist, cognateBoost;
-  std::string outputPrefix, inputFile;
-  bool compress, help;
+  std::string inputFile, outputFile;
+  bool help, mosesFormat;
 };
 
 #endif // OPTIONS_HPP_

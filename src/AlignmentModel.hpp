@@ -6,8 +6,6 @@
 
 class AlignmentModel
 {
-public:
-  virtual std::vector<AlignmentType> GetAggregateAlignment() = 0;
 };
 
 #endif // ALIGNMENT_MODEL_HPP_
