@@ -128,8 +128,8 @@ public:
 
   size_t GetSize() const { return logProbs.size(); }
 
-  // get the probability of pos-th element
-  float operator[] (int pos) const { return logProbs[pos]; }
+  // get/set the probability of pos-th element
+  float &operator[] (int pos) { return logProbs[pos]; }
 
   // normalize the distribution (in-place)
   void Normalize()

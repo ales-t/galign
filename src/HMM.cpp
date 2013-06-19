@@ -19,10 +19,11 @@ HMM::HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCoun
   BOOST_FOREACH(Sentence *sentence, sentences) {
     for (size_t i = 0; i < sentence->src.size(); i++) {
       int distortion = 1;
-      // TODO spravna inicializace
+      // TODO correct initialization
       if (i > 0)
         distortion = sentence->align[i] - sentence->align[i - 1];
       distortionCounts[GetBucket(distortion)]++;
+      distortionCountsSum++;
     }
   }
   order = corpus->GetTokensToSentences();
@@ -46,11 +47,10 @@ void HMM::RunIteration(double temp)
     // discount removed alignment link
     if (--jointCounts[srcWord][oldTgtWord] <= 0) jointCounts[srcWord].Erase(oldTgtWord);
     counts[oldTgtWord]--;
-    UpdateTransition(distortionCounts, sentence, srcPos, -1);
+    UpdateTransition(sentence, srcPos, -1);
 
     // generate a sample
-    vector<float> distParams = GetDistribution(sentence, srcPos, counts, 
-        jointCounts, distortionCounts);
+    vector<float> distParams = GetDistribution(sentence, srcPos);
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 
@@ -59,70 +59,69 @@ void HMM::RunIteration(double temp)
     jointCounts[srcWord][sentence->tgt[sample]]++;
     counts[sentence->tgt[sample]]++;
 
-    UpdateTransition(distortionCounts, sentence, srcPos, +1);
+    UpdateTransition(sentence, srcPos, +1);
   }
 }
 
-void HMM::UpdateTransition(DistortionCountType &distCounts, const Sentence *sentence, size_t srcPos, int diff)
+vector<int> HMM::GetTransitions(const Sentence *sentence, size_t srcPos)
 {
+  vector<int> transitions;
   int prev = srcPos - 1;
   int next = srcPos + 1;
   while (prev >= 0 && sentence->align[prev] == 0) prev--;
   while (next < (int)sentence->src.size() && sentence->align[next] == 0) next++;
   if (sentence->align[srcPos] == 0) {
     if (prev == -1 || next == (int)sentence->src.size())
-      distCounts[GetBucket(1)] += diff;
-    else {
-      distCounts[GetBucket(sentence->align[next] - sentence->align[prev])] += diff;
-    }
+      transitions.push_back(1);
+    else
+      transitions.push_back(sentence->align[next] - sentence->align[prev]);
   } else {
     if (prev == -1)
-      distCounts[GetBucket(1)] += diff;
+      transitions.push_back(1);
     else 
-      distCounts[GetBucket(sentence->align[srcPos] - sentence->align[prev])] += diff;
+      transitions.push_back(sentence->align[srcPos] - sentence->align[prev]);
 
     if (next == (int)sentence->src.size())
-      distCounts[GetBucket(1)] += diff;
+      transitions.push_back(1);
     else
-      distCounts[GetBucket(sentence->align[next] - sentence->align[srcPos])] += diff;
+      transitions.push_back(sentence->align[next] - sentence->align[srcPos]);
+  }
+  return transitions;
+}
+
+void HMM::UpdateTransition(const Sentence *sentence, size_t srcPos, int diff)
+{
+  vector<int> transitions = GetTransitions(sentence, srcPos);
+  BOOST_FOREACH(int t, transitions) {
+    distortionCounts[GetBucket(t)] += diff;
+    distortionCountsSum += diff;
   }
 }
 
-std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition, CountType &a_counts,
-    JointCountType &a_jointCounts, DistortionCountType &a_distCounts)
+std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
 {
-  LogDistribution lexicalProbs;
-  LogDistribution inDistortionPotentials;
-  LogDistribution outDistortionPotentials;
+  LogDistribution dist;
 
   float nullProb = 1 / (float)sentence->tgt.size();
   for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
-    float logLexProb = log(a_jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + alpha)
-      - log(a_counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens());
-    lexicalProbs.Add(logLexProb);
+    float logProb = log(jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + alpha)
+      - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens());
 
     if (tgtPosition == 0) {
-      inDistortionPotentials.Add(log(nullProb));
-      outDistortionPotentials.Add(0);
+      logProb += log(nullProb);
     } else {
-      int inDist = (srcPosition > 0) ? tgtPosition - sentence->align[srcPosition - 1] : 1;
-      int outDist = (srcPosition < sentence->src.size() - 1)
-        ? sentence->align[srcPosition + 1] - tgtPosition : 1;
-      size_t inDistBucket = GetBucket(inDist);
-      inDistortionPotentials.Add(log(1 - nullProb) + log(a_distCounts[inDistBucket] + distAlpha));
-      size_t outDistBucket = GetBucket(outDist);
-      outDistortionPotentials.Add(log(a_distCounts[outDistBucket] + distAlpha));
+      logProb += log(1 - nullProb);
+      sentence->align[srcPosition] = tgtPosition; // so that GetTransitions() is correct
+      vector<int> transitions = GetTransitions(sentence, srcPosition);
+      assert(transitions.size() == 2);
+      BOOST_FOREACH(int t, transitions) {
+        logProb += log(distortionCounts[GetBucket(t)] + distAlpha)
+          - log(distortionCountsSum + distortionCounts.size() * distAlpha);
+      }
     }
+    dist.Add(logProb);
   }
 
-  assert(lexicalProbs.GetSize() == inDistortionPotentials.GetSize());
-  assert(inDistortionPotentials.GetSize() == outDistortionPotentials.GetSize());
-  lexicalProbs.Normalize();
-  inDistortionPotentials.Normalize();
-  outDistortionPotentials.Normalize();
-  vector<float> out(sentence->tgt.size());
-  for (size_t i = 0; i < sentence->tgt.size(); i++) {
-    out[i] = exp(lexicalProbs[i] + inDistortionPotentials[i] + outDistortionPotentials[i]);
-  }
-  return out;
+  dist.Normalize();
+  return dist.Exp();
 }

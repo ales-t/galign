@@ -24,10 +24,9 @@ public:
   void RunIteration(double temp);
 
 private:
-  std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition, CountType &a_counts,
-    JointCountType &a_jointCounts, DistortionCountType &a_distCounts);
-  void UpdateTransition(DistortionCountType &distCounts, const Sentence *sentence, size_t srcPos,
-      int diff);
+  std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition);
+  std::vector<int> GetTransitions(const Sentence *sentence, size_t srcPos);
+  void UpdateTransition(const Sentence *sentence, size_t srcPos, int diff);
   int GetBucket(int distortion)
   {
     if (distortion > BUCKET_LIMIT) distortion = BUCKET_LIMIT;
@@ -42,6 +41,7 @@ private:
   CountType counts;
   JointCountType jointCounts; 
   DistortionCountType distortionCounts;
+  int distortionCountsSum;
 };
 
 #endif // HMM_HPP_
