@@ -15,11 +15,11 @@ void Options::ParseOptions(int argc, char **argv)
   opts.add_options()
     ("ibm1-cooling-from", value<size_t>(&ibm1CoolingFrom)->default_value(11),
      "Iteration from which samples are aggregated for the final word alignment.")
-    ("ibm1-iterations", value<size_t>(&ibm1Iterations)->default_value(10),
+    ("ibm1-iterations", value<size_t>(&ibm1Iterations)->default_value(20),
      "Number of iterations.")
-    ("hmm-cooling-from", value<size_t>(&hmmCoolingFrom)->default_value(10),
+    ("hmm-cooling-from", value<size_t>(&hmmCoolingFrom)->default_value(40),
      "Iteration from which samples are aggregated for the final word alignment.")
-    ("hmm-iterations", value<size_t>(&hmmIterations)->default_value(20),
+    ("hmm-iterations", value<size_t>(&hmmIterations)->default_value(50),
      "Number of iterations.")
     ("alpha-lex,a", value<float>(&alphaLex)->default_value(0.01),
      "Value of the uniform Dirichlet prior on lexical probability.")    

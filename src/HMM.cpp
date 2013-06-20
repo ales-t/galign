@@ -45,6 +45,7 @@ void HMM::RunIteration(double temp)
 
     // generate a sample
     vector<float> distParams = GetDistribution(sentence, srcPos);
+    Annealer::Anneal(temp, distParams.begin(), distParams.end());
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
     int sample = dist(generator);
 

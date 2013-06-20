@@ -93,6 +93,15 @@ public:
     }
   }
 
+  template <typename IterT>
+  static void Anneal(double temp, IterT begin, IterT end)
+  {
+    while (begin != end) {
+      *begin = pow(*begin, 1 / temp);
+      ++begin;
+    }
+  }
+
 private:
   size_t coolingFrom;
   double step;

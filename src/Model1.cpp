@@ -56,6 +56,7 @@ void Model1::RunIteration(double temp)
     }
     lexicalProbs.Normalize();
     vector<float> distParams = lexicalProbs.Exp();
+    Annealer::Anneal(temp, distParams.begin(), distParams.end());
 
     // generate a sample
     discrete_distribution<int> dist(distParams.begin(), distParams.end());
