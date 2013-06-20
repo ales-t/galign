@@ -16,12 +16,11 @@
 
 using namespace std;
 
-void Run(AlignmentModel &model, int iterations, int coolingFrom, const string &modelFile)
+void Run(AlignmentModel &model, int iterations, int coolingFrom, InStreamType *oldModel)
 {
-  if (! modelFile.empty()) {
-    InStreamType *in = InitInput(modelFile);
-    model.ReadModel(*in);
-    close(*in);
+  if (oldModel) {
+    model.ReadModel(*oldModel);
+    close(*oldModel);
   }
   Annealer annealer(iterations, coolingFrom);
   for (int i = 1; i <= iterations; i++) {
@@ -42,8 +41,14 @@ int main(int argc, char **argv)
   omp_set_num_threads(cores);
   Log("Using " + boost::lexical_cast<string>(cores) + " CPU cores");
 
-  // load corpus
-  Corpus *corpus = new Corpus(opts.GetInputFile());
+  InStreamType *oldModel = NULL;
+  Corpus *corpus;
+  if (! opts.GetLoadModelFile().empty()) {
+    oldModel = InitInput(opts.GetLoadModelFile());
+    corpus = new Corpus(opts.GetInputFile(), *oldModel);
+  } else {
+    corpus = new Corpus(opts.GetInputFile());
+  }
   Log("Corpus loaded.");
 
   // IBM Model 1
@@ -52,10 +57,10 @@ int main(int argc, char **argv)
   AlignmentModel *lastModel = &model1;
   Log("Initialized Model1");
   if (opts.GetIBM1Iterations() > 0) {
-    if (! opts.GetLoadModelFile().empty() && opts.GetHMMIterations() > 0) {
+    if (oldModel && opts.GetHMMIterations() > 0) {
       Warn("Will load existing model, skipping IBM1 training.");
     } else {
-      Run(model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), opts.GetLoadModelFile());
+      Run(model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), oldModel);
     }
   }
 
@@ -65,13 +70,14 @@ int main(int argc, char **argv)
         model1.GetCounts(), model1.GetJointCounts());
     lastModel = hmmModel;
     Log("Initialized HMM");
-    Run(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), opts.GetLoadModelFile());
+    Run(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), oldModel);
   }
 
   // optionally store trained model
   string modelFile = opts.GetStoreModelFile();
   if (! modelFile.empty()) {
     OutStreamType *out = InitOutput(modelFile);
+    corpus->WriteIndex(*out);
     lastModel->WriteModel(*out);
     close(*out);
   }
