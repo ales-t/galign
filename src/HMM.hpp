@@ -21,7 +21,7 @@ class HMM : public AlignmentModel
 public:
   HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
-  void RunIteration(double temp);
+  void RunIteration(float temp);
 
 private:
   std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition);

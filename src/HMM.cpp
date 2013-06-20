@@ -24,7 +24,7 @@ HMM::HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCoun
   order = corpus->GetTokensToSentences();
 }
 
-void HMM::RunIteration(double temp)
+void HMM::RunIteration(float temp)
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());

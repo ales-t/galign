@@ -30,7 +30,7 @@ void Model1::AlignRandomly()
   }
 }
 
-void Model1::RunIteration(double temp)
+void Model1::RunIteration(float temp)
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());

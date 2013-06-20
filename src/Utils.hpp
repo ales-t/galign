@@ -84,7 +84,7 @@ public:
     step = 1.0 / (1 + total - coolingFrom);
   }
 
-  double GetTemp(size_t iter)
+  float GetTemp(size_t iter)
   {
     if (iter <= coolingFrom) {
       return 1;
@@ -94,7 +94,7 @@ public:
   }
 
   template <typename IterT>
-  static void Anneal(double temp, IterT begin, IterT end)
+  static void Anneal(float temp, IterT begin, IterT end)
   {
     while (begin != end) {
       *begin = pow(*begin, 1 / temp);
@@ -104,7 +104,7 @@ public:
 
 private:
   size_t coolingFrom;
-  double step;
+  float step;
 };
 
 
