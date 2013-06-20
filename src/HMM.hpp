@@ -11,6 +11,7 @@
 #include "Corpus.hpp"
 #include "Model1.hpp"
 #include "AlignmentModel.hpp"
+#include "Serialization.hpp"
 
 #define BUCKET_LIMIT 6
 
@@ -21,6 +22,23 @@ class HMM : public AlignmentModel
 public:
   HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
+  
+  // initialize with existing model
+  void ReadModel(InStreamType &in)
+  {
+    // TODO some header
+    counts = IterableReader>CountType>(in);
+    jointCounts.Expose() = IterableReader<JointCountType>(in);
+    distortionCounts = IterableReader<DistortionCountType>(in);
+  }
+
+  void WriteModel(OutStreamType &out)
+  {
+    IterableWriter<CountType>(out, counts);
+    IterableWriter<JointCountType>(out, jointCounts.Expose());
+    IterableWriter<DistortionCountType>(out, distortionCounts);
+  }
+
   void RunIteration(float temp);
 
 private:

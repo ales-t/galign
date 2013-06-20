@@ -14,6 +14,9 @@
 #include <boost/lexical_cast.hpp>
 #include <tbb/concurrent_hash_map.h>
 
+typedef boost::iostreams::filtering_istream InStreamType;
+typedef boost::iostreams::filtering_ostream OutStreamType;
+
 inline void Warn(const std::string &msg)
 {
   std::cerr << "WARNING: " << msg << std::endl;
@@ -39,7 +42,7 @@ class SafeHash
   typedef tbb::concurrent_hash_map<KeyT, ValueT> InternalHashType;
 
 public:
-  typedef ValueT value_type;
+//  typedef std::pair<KeyT, ValueT> value_type;
 
   const ValueT &operator[](const KeyT &key) const
   {
@@ -68,6 +71,12 @@ public:
     typename InternalHashType::accessor a;
     internalHash.find(a, key);
     internalHash.erase(a);    
+  }
+
+  // used only for (de)serialization
+  InternalHashType &Expose()
+  {
+    return internalHash;
   }
 
 private:
@@ -161,11 +170,11 @@ private:
 // initialize input stream, supports plain and gzipped files
 // (distinguished by file extension .gz)
 // empty fileName is interpreted as STDIN
-boost::iostreams::filtering_istream *InitInput(const std::string &fileName = "");
+InStreamType *InitInput(const std::string &fileName = "");
 
 // initialize output stream, supports plain and gzipped files
 // (distinguished by file extension .gz)
 // empty fileName is interpreted as STDOUT
-boost::iostreams::filtering_ostream *InitOutput(const std::string &fileName = "");
+OutStreamType *InitOutput(const std::string &fileName = "");
 
 #endif // UTILS_HPP_

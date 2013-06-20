@@ -15,13 +15,13 @@ using namespace boost::algorithm;
 Corpus::Corpus(const string &fileName)
 {
   // empty name is interpreted as stdin by InitInput
-  filtering_istream *in = InitInput(fileName);
+  InStreamType *in = InitInput(fileName);
 
   // read the file
   Read(*in);
 }
 
-void Corpus::Read(filtering_istream &in)
+void Corpus::Read(InStreamType &in)
 {
   string line;
   int lineNum = 0;

@@ -9,6 +9,8 @@
 #include <boost/unordered_set.hpp>
 #include <boost/bimap.hpp>
 
+#include "Serialization.hpp"
+
 typedef std::vector<int> AlignmentType;
 typedef std::vector<size_t> WordSequenceType;
 typedef std::vector<std::pair<size_t, size_t> > SentenceMappingType;
@@ -31,6 +33,14 @@ public:
   // with word separated by spaces only
   Corpus(const std::string &fileName);
 
+  // loads word index from inStream and calls the standard ctor
+  Corpus(const std::string &fileName, InStreamType &inStream)
+  {
+    srcIndex.left = IterableReader<IndexType::left_map>(inStream);
+    tgtIndex.left = IterableReader<IndexType::left_map>(inStream);
+    Corpus(fileName);
+  }
+
   // get the corpus; not const as models write the alignment directly in the corpus
   std::vector<Sentence *> &GetSentences() { return sentences; }
 
@@ -50,9 +60,16 @@ public:
   size_t GetSrcIndex(const std::string &word) { return GetIndex(srcIndex, word); }
   size_t GetTgtIndex(const std::string &word) { return GetIndex(tgtIndex, word); }
 
+  // write word index into outStream
+  void WriteIndex(OutStreamType &outStream)
+  {
+    IterableWriter<IndexType::left_map>(outStream, srcIndex.left);
+    IterableWriter<IndexType::left_map>(outStream, tgtIndex.left);
+  }
+
 private:
   // read the corpus, the stream is initialized in ctor
-  void Read(boost::iostreams::filtering_istream &in);
+  void Read(InStreamType &in);
 
   // returns the word corresponding to given index
   const std::string &GetWord(IndexType &index, size_t wordIndex);

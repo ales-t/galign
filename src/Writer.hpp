@@ -23,7 +23,7 @@ private:
   // print one line of word alignment
   // without the mosesFormat flag, the format is srcWord{alignedWord} srcWord{alignedWord} ...
   // with mosesFormat, prints out 0-0 1-0 etc. (zero-based, the virtual NULL token is not included)
-  void WriteAlignmentLine(boost::iostreams::filtering_ostream &out,
+  void WriteAlignmentLine(OutStreamType &out,
       const WordSequenceType &src,
       const WordSequenceType &tgt,
       const AlignmentType &align, bool mosesFormat);

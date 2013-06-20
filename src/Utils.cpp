@@ -11,9 +11,9 @@ using namespace boost::iostreams;
 using namespace boost;
 using namespace std;
 
-filtering_istream *InitInput(const string &fileName)
+InStreamType *InitInput(const string &fileName)
 {
-  filtering_istream *in = new filtering_istream();
+  InStreamType *in = new InStreamType();
   if (fileName.empty()) {
     in->push(cin);
   } else {
@@ -27,9 +27,9 @@ filtering_istream *InitInput(const string &fileName)
   return in;
 }
 
-filtering_ostream *InitOutput(const string &fileName)
+OutStreamType *InitOutput(const string &fileName)
 {
-  filtering_ostream *out = new filtering_ostream();
+  OutStreamType *out = new OutStreamType();
   if (fileName.empty()) {
     out->push(cout);
   } else {

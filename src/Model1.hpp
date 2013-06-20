@@ -11,6 +11,7 @@
 #include "Corpus.hpp"
 #include "Utils.hpp"
 #include "AlignmentModel.hpp"
+#include "Serialization.hpp"
 
 typedef std::vector<tbb::atomic<int> > CountType;
 typedef std::vector<SafeHash<size_t, tbb::atomic<int> > > JointCountType;
@@ -25,6 +26,20 @@ public:
     order = corpus->GetTokensToSentences();
     counts.resize(corpus->GetTotalTargetTypes());
     jointCounts.resize(corpus->GetTotalSourceTypes());
+  }
+
+  // initialize with existing model
+  void ReadModel(InStreamType &in)
+  {
+    // TODO some header
+    counts = IterableReader>CountType>(in);
+    jointCounts.Expose() = IterableReader<JointCountType>(in);
+  }
+
+  void WriteModel(OutStreamType &out)
+  {
+    IterableWriter<CountType>(out, counts);
+    IterableWriter<JointCountType>(out, jointCounts.Expose());
   }
 
   // align each source word in corpus to a random target word,
