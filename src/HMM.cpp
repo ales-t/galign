@@ -28,7 +28,6 @@ void HMM::RunIteration(double temp)
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   random_shuffle(order.begin(), order.end());
-  cerr << counts[0] << endl;
 
   // over all words in corpus (in random order)
   #pragma omp parallel for
