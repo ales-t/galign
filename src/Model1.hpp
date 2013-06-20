@@ -32,14 +32,14 @@ public:
   void ReadModel(InStreamType &in)
   {
     // TODO some header
-    counts = IterableReader>CountType>(in);
-    jointCounts.Expose() = IterableReader<JointCountType>(in);
+    counts = IterableReader>CountType>().Read(in);
+    jointCounts.Expose() = IterableReader<JointCountType>().Read(in);
   }
 
   void WriteModel(OutStreamType &out)
   {
-    IterableWriter<CountType>(out, counts);
-    IterableWriter<JointCountType>(out, jointCounts.Expose());
+    IterableWriter<CountType>().Write(out, counts);
+    IterableWriter<JointCountType>().Write(out, jointCounts.Expose());
   }
 
   // align each source word in corpus to a random target word,

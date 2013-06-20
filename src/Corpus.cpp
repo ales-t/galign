@@ -12,15 +12,6 @@ using namespace boost;
 using namespace boost::iostreams;
 using namespace boost::algorithm;
 
-Corpus::Corpus(const string &fileName)
-{
-  // empty name is interpreted as stdin by InitInput
-  InStreamType *in = InitInput(fileName);
-
-  // read the file
-  Read(*in);
-}
-
 void Corpus::Read(InStreamType &in)
 {
   string line;

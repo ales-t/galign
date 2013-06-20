@@ -31,14 +31,17 @@ public:
   // filename can be empty, corpus is then read from stdin
   // each line in the file must contain 2 columns separated by \t,
   // with word separated by spaces only
-  Corpus(const std::string &fileName);
+  Corpus(const std::string &fileName)
+  {
+    Read(*InitInput(fileName));
+  }
 
   // loads word index from inStream and calls the standard ctor
   Corpus(const std::string &fileName, InStreamType &inStream)
   {
-    srcIndex.left = IterableReader<IndexType::left_map>(inStream);
-    tgtIndex.left = IterableReader<IndexType::left_map>(inStream);
-    Corpus(fileName);
+//    srcIndex.left = IterableReader<IndexType::left_map>().Read(inStream);
+//    tgtIndex.left = IterableReader<IndexType::left_map>().Read(inStream);
+    Read(*InitInput(fileName));
   }
 
   // get the corpus; not const as models write the alignment directly in the corpus
@@ -63,8 +66,8 @@ public:
   // write word index into outStream
   void WriteIndex(OutStreamType &outStream)
   {
-    IterableWriter<IndexType::left_map>(outStream, srcIndex.left);
-    IterableWriter<IndexType::left_map>(outStream, tgtIndex.left);
+    IterableWriter<IndexType::left_map>().Write(outStream, srcIndex.left);
+    IterableWriter<IndexType::left_map>().Write(outStream, tgtIndex.left);
   }
 
 private:

@@ -27,16 +27,16 @@ public:
   void ReadModel(InStreamType &in)
   {
     // TODO some header
-    counts = IterableReader>CountType>(in);
-    jointCounts.Expose() = IterableReader<JointCountType>(in);
-    distortionCounts = IterableReader<DistortionCountType>(in);
+    counts = IterableReader>CountType>().Read(in);
+    jointCounts.Expose() = IterableReader<JointCountType>().Read(in);
+    distortionCounts = IterableReader<DistortionCountType>().Read(in);
   }
 
   void WriteModel(OutStreamType &out)
   {
-    IterableWriter<CountType>(out, counts);
-    IterableWriter<JointCountType>(out, jointCounts.Expose());
-    IterableWriter<DistortionCountType>(out, distortionCounts);
+    IterableWriter<CountType>().Write(out, counts);
+    IterableWriter<JointCountType>().Write(out, jointCounts.Expose());
+    IterableWriter<DistortionCountType>().Write(out, distortionCounts);
   }
 
   void RunIteration(float temp);
