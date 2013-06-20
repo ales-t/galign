@@ -39,8 +39,8 @@ public:
   // loads word index from inStream and calls the standard ctor
   Corpus(const std::string &fileName, InStreamType &inStream)
   {
-//    srcIndex.left = IterableReader<IndexType::left_map>().Read(inStream);
-//    tgtIndex.left = IterableReader<IndexType::left_map>().Read(inStream);
+    MapReader<IndexType, std::string, size_t>().Read(inStream, srcIndex);
+    MapReader<IndexType, std::string, size_t>().Read(inStream, tgtIndex);
     Read(*InitInput(fileName));
   }
 
@@ -66,8 +66,8 @@ public:
   // write word index into outStream
   void WriteIndex(OutStreamType &outStream)
   {
-    IterableWriter<IndexType::left_map>().Write(outStream, srcIndex.left);
-    IterableWriter<IndexType::left_map>().Write(outStream, tgtIndex.left);
+    MapWriter<IndexType::left_map>().Write(outStream, srcIndex.left);
+    MapWriter<IndexType::left_map>().Write(outStream, tgtIndex.left);
   }
 
 private:

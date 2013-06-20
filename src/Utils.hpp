@@ -39,9 +39,9 @@ inline void Die(const std::string &msg)
 template <typename KeyT, typename ValueT>
 class SafeHash
 {
+public:
   typedef tbb::concurrent_hash_map<KeyT, ValueT> InternalHashType;
 
-public:
 //  typedef std::pair<KeyT, ValueT> value_type;
 
   const ValueT &operator[](const KeyT &key) const

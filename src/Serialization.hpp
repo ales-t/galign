@@ -17,19 +17,24 @@ template<typename T>
 class ValueWriter
 {
 public:
-  void Write(OutStreamType &outStream, const T &obj)
+  void Write(OutStreamType &outStream, const T &what)
   {
-    outStream << obj << "\n";
+    outStream << what << "\n";
   }
 };
 
-template<typename KeyT, typename ValueT>
-class ValueWriter <std::pair<KeyT, ValueT> >
+template<typename T>
+class MapWriter
 {
 public:
-  void Write(OutStreamType &outStream, const std::pair<KeyT, ValueT> &obj)
+  void Write(OutStreamType &outStream, const T &what)
   {
-    outStream << obj.first << "\t" << obj.second << "\n";
+    outStream << what.size() << "\n";
+    typename T::const_iterator it = what.begin();
+    while (it != what.end()) {
+      outStream << it->first << "\t" << it->second << "\n";
+      ++it;
+    }
   }
 };
 
@@ -37,14 +42,11 @@ template<typename T>
 class IterableWriter
 {
 public:
-  void Write(OutStreamType &outStream, const T &obj)
+  void Write(OutStreamType &outStream, const T &what)
   {
-    ValueWriter<size_t> sizeWriter;
-    sizeWriter.Write(outStream, obj.size());
-
-    typename T::const_iterator it = obj.begin();
-    ValueWriter<typename T::value_type> writer;
-    while (it != obj.end()) writer.Write(outStream, *it++);
+    outStream << what.size() << "\n";
+    typename T::const_iterator it = what.begin();
+    while (it != what.end()) outStream << *it << "\n";
   }
 };
 
@@ -64,15 +66,34 @@ public:
   }
 };
 
-template<typename KeyT, typename ValueT>
-class ValueReader <std::pair<KeyT, ValueT> >
+template<>
+class ValueReader <tbb::atomic<int> >
 {
 public:
-  const std::pair<KeyT, ValueT> Read(InStreamType &inStream)
+  tbb::atomic<int> Read(InStreamType &inStream)
   {
-    KeyT key = ValueReader<KeyT>().Read(inStream);
-    ValueT value = ValueReader<ValueT>().Read(inStream);
-    return std::make_pair<KeyT, ValueT>(key, value);
+    int tmp;
+    tbb::atomic<int> out;
+    inStream >> tmp;
+    out = tmp;
+    return out;
+  }
+};
+
+// why do we pass KeyT and ValueT? Boost::bimap craziness
+template<typename T, typename KeyT, typename ValueT>
+class MapReader
+{
+public:
+  void Read(InStreamType &inStream, T &what)
+  {
+    size_t size = ValueReader<size_t>().Read(inStream);
+
+    for (size_t i = 0; i < size; i++) {
+      KeyT key = ValueReader<KeyT>().Read(inStream);
+      ValueT value = ValueReader<ValueT>().Read(inStream);
+      what.insert(typename T::value_type(key, value));
+    }
   }
 };
 

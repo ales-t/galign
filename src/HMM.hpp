@@ -23,19 +23,26 @@ public:
   HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
   
-  // initialize with existing model
-  void ReadModel(InStreamType &in)
+  virtual void ReadModel(InStreamType &in)
   {
     // TODO some header
-    counts = IterableReader>CountType>().Read(in);
-    jointCounts.Expose() = IterableReader<JointCountType>().Read(in);
+    counts = IterableReader<CountType>().Read(in);
+    size_t size = ValueReader<size_t>().Read(in);
+    jointCounts.resize(size);
+    for (size_t i = 0; i < size; i++) {
+      MapReader<CountHashType::InternalHashType,
+        size_t, tbb::atomic<int> >().Read(in, jointCounts[i].Expose());
+    }
     distortionCounts = IterableReader<DistortionCountType>().Read(in);
   }
 
-  void WriteModel(OutStreamType &out)
-  {
+  virtual void WriteModel(OutStreamType &out)
+  {  
     IterableWriter<CountType>().Write(out, counts);
-    IterableWriter<JointCountType>().Write(out, jointCounts.Expose());
+    ValueWriter<size_t>().Write(out, jointCounts.size());
+    BOOST_FOREACH(JointCountType::value_type hash, jointCounts) {
+      MapWriter<CountHashType::InternalHashType>().Write(out, hash.Expose());
+    }
     IterableWriter<DistortionCountType>().Write(out, distortionCounts);
   }
 
