@@ -18,12 +18,7 @@ HMM::HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCoun
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
     for (size_t i = 0; i < sentence->src.size(); i++) {
-      int distortion = 1;
-      // TODO correct initialization
-      if (i > 0)
-        distortion = sentence->align[i] - sentence->align[i - 1];
-      distortionCounts[GetBucket(distortion)]++;
-      distortionCountsSum++;
+      UpdateTransition(sentence, i, +1);
     }
   }
   order = corpus->GetTokensToSentences();
@@ -94,7 +89,6 @@ void HMM::UpdateTransition(const Sentence *sentence, size_t srcPos, int diff)
   vector<int> transitions = GetTransitions(sentence, srcPos);
   BOOST_FOREACH(int t, transitions) {
     distortionCounts[GetBucket(t)] += diff;
-    distortionCountsSum += diff;
   }
 }
 
@@ -104,22 +98,28 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
 
   float nullProb = 1 / (float)sentence->tgt.size();
   for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
-    float logProb = log(jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + alpha)
-      - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens());
+    dist.Add(log(jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + alpha)
+      - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens()));
+  }
 
-    if (tgtPosition == 0) {
-      logProb += log(nullProb);
-    } else {
-      logProb += log(1 - nullProb);
-      sentence->align[srcPosition] = tgtPosition; // so that GetTransitions() is correct
-      vector<int> transitions = GetTransitions(sentence, srcPosition);
-      assert(transitions.size() == 2);
-      BOOST_FOREACH(int t, transitions) {
-        logProb += log(distortionCounts[GetBucket(t)] + distAlpha)
-          - log(distortionCountsSum + distortionCounts.size() * distAlpha);
-      }
+  LogDistribution transitionDist; 
+  for (size_t tgtPosition = 1; tgtPosition < sentence->tgt.size(); tgtPosition++) {
+    sentence->align[srcPosition] = tgtPosition; // so that GetTransitions() is correct
+    vector<int> transitions = GetTransitions(sentence, srcPosition);
+    float logProb = 0;
+    BOOST_FOREACH(int t, transitions) {
+      logProb += log(distortionCounts[GetBucket(t)] + distAlpha);
     }
-    dist.Add(logProb);
+    transitionDist.Add(logProb);
+  }
+  transitionDist.Normalize();
+
+  for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
+    if (tgtPosition == 0) {
+      dist[tgtPosition] += log(nullProb);
+    } else {
+      dist[tgtPosition] += log(1 - nullProb) + transitionDist[tgtPosition - 1];
+    }
   }
 
   dist.Normalize();

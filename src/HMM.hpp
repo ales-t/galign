@@ -41,7 +41,6 @@ private:
   CountType counts;
   JointCountType jointCounts; 
   DistortionCountType distortionCounts;
-  int distortionCountsSum;
 };
 
 #endif // HMM_HPP_
