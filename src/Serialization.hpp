@@ -46,7 +46,7 @@ public:
   {
     outStream << what.size() << "\n";
     typename T::const_iterator it = what.begin();
-    while (it != what.end()) outStream << *it << "\n";
+    while (it != what.end()) outStream << *it++ << "\n";
   }
 };
 

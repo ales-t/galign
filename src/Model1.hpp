@@ -56,7 +56,7 @@ public:
   void AlignRandomly();
 
   // run one iteration of Gibbs sampling over the corpus
-  void RunIteration(float temp);
+  virtual void RunIteration(float temp);
 
   // get counts and joint counts, used as initial parameters by
   // subsequent models

@@ -16,6 +16,20 @@
 
 using namespace std;
 
+void Run(AlignmentModel &model, int iterations, int coolingFrom, const string &modelFile)
+{
+  if (! modelFile.empty()) {
+    InStreamType *in = InitInput(modelFile);
+    model.ReadModel(*in);
+    close(*in);
+  }
+  Annealer annealer(iterations, coolingFrom);
+  for (int i = 1; i <= iterations; i++) {
+    model.RunIteration(annealer.GetTemp(i));
+    Log("Finished iteration " + boost::lexical_cast<string>(i));
+  }
+}
+
 int main(int argc, char **argv)
 {
   // parse options
@@ -32,36 +46,38 @@ int main(int argc, char **argv)
   Corpus *corpus = new Corpus(opts.GetInputFile());
   Log("Corpus loaded.");
 
-  // initialize IBM Model 1
+  // IBM Model 1
   Model1 model1(corpus, opts.GetLexicalAlpha());
   model1.AlignRandomly();
   AlignmentModel *lastModel = &model1;
-  Annealer model1Annealer(opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom());
   Log("Initialized Model1");
-
-  // run Model 1 iterations
-  for (size_t i = 1; i <= opts.GetIBM1Iterations(); i++) {
-    model1.RunIteration(model1Annealer.GetTemp(i));
-    Log("Model1: Finished iteration " + boost::lexical_cast<string>(i));
+  if (opts.GetIBM1Iterations() > 0) {
+    if (! opts.GetLoadModelFile().empty() && opts.GetHMMIterations() > 0) {
+      Warn("Will load existing model, skipping IBM1 training.");
+    } else {
+      Run(model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), opts.GetLoadModelFile());
+    }
   }
 
-  // initialize HMM model, use counts from IBM Model 1
+  // HMM
   if (opts.GetHMMIterations() > 0) {
     HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetDistortionAlpha(),
         model1.GetCounts(), model1.GetJointCounts());
     lastModel = hmmModel;
-    Annealer hmmAnnealer(opts.GetHMMIterations(), opts.GetHMMCoolingFrom());
     Log("Initialized HMM");
+    Run(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), opts.GetLoadModelFile());
+  }
 
-    // run HMM model iterations
-    for (size_t i = 1; i <= opts.GetHMMIterations(); i++) {
-      hmmModel->RunIteration(hmmAnnealer.GetTemp(i));
-      Log("HMM: Finished iteration " + boost::lexical_cast<string>(i));
-    }
+  // optionally store trained model
+  string modelFile = opts.GetStoreModelFile();
+  if (! modelFile.empty()) {
+    OutStreamType *out = InitOutput(modelFile);
+    lastModel->WriteModel(*out);
+    close(*out);
   }
 
   // output last alignment and aggregate alignment
-  Log("Writing alignments.");
+  Log("Writing alignments.");  
   Writer writer(corpus);
   writer.WriteAlignment(opts.GetOutputFile(), opts.GetMosesFormat());
   Log("Done.");

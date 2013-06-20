@@ -14,17 +14,19 @@ public:
   }
   void ParseOptions(int argc, char **argv);
 
-  bool GetHelp()                { return help; }
-  bool GetMosesFormat()         { return mosesFormat; }
-  size_t GetIBM1Iterations()    { return ibm1Iterations; }
-  size_t GetIBM1CoolingFrom()   { return ibm1CoolingFrom; }
-  size_t GetHMMIterations()     { return hmmIterations; }
-  size_t GetHMMCoolingFrom()    { return hmmCoolingFrom; }
-  size_t GetCores()             { return cores; }
-  float GetLexicalAlpha()       { return alphaLex; }
-  float GetDistortionAlpha()    { return alphaDist; }
-  std::string GetOutputFile()   { return outputFile; }
-  std::string GetInputFile()    { return inputFile; }
+  bool GetHelp()                  { return help; }
+  bool GetMosesFormat()           { return mosesFormat; }
+  size_t GetIBM1Iterations()      { return ibm1Iterations; }
+  size_t GetIBM1CoolingFrom()     { return ibm1CoolingFrom; }
+  size_t GetHMMIterations()       { return hmmIterations; }
+  size_t GetHMMCoolingFrom()      { return hmmCoolingFrom; }
+  size_t GetCores()               { return cores; }
+  float GetLexicalAlpha()         { return alphaLex; }
+  float GetDistortionAlpha()      { return alphaDist; }
+  std::string GetOutputFile()     { return outputFile; }
+  std::string GetInputFile()      { return inputFile; }
+  std::string GetLoadModelFile()  { return loadModelFile; }
+  std::string GetStoreModelFile() { return storeModelFile; }
 
 private:
   Options() {}
@@ -33,8 +35,8 @@ private:
 
   size_t ibm1Iterations, ibm1CoolingFrom,
          hmmIterations, hmmCoolingFrom, cores;
-  float alphaLex, alphaDist, cognateBoost;
-  std::string inputFile, outputFile;
+  float alphaLex, alphaDist;
+  std::string inputFile, outputFile, loadModelFile, storeModelFile;
   bool help, mosesFormat;
 };
 

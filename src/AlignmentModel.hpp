@@ -7,6 +7,8 @@
 
 class AlignmentModel
 {
+public:
+  virtual void RunIteration(float temp) = 0;
   virtual void ReadModel(InStreamType &inStream) = 0;
   virtual void WriteModel(OutStreamType &outStream) = 0;
 };

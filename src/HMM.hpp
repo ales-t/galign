@@ -46,7 +46,7 @@ public:
     IterableWriter<DistortionCountType>().Write(out, distortionCounts);
   }
 
-  void RunIteration(float temp);
+  virtual void RunIteration(float temp);
 
 private:
   std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition);

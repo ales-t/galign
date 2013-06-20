@@ -25,6 +25,10 @@ void Options::ParseOptions(int argc, char **argv)
      "Value of the uniform Dirichlet prior on lexical probability.")    
     ("alpha-dist,a", value<float>(&alphaDist)->default_value(1),
      "Value of the uniform Dirichlet prior on distortion probability.")    
+    ("load-model-file", value<string>(&loadModelFile)->default_value(""),
+     "Load an existing model file.")
+    ("store-model-file", value<string>(&storeModelFile)->default_value(""),
+     "Save the final model file.")
     ("input-file,i", value<string>(&inputFile)->default_value(""),
      "Input file, default is STDIN.")
     ("output-file,o", value<string>(&outputFile)->default_value(""),
