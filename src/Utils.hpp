@@ -40,6 +40,8 @@ template <typename KeyT, typename ValueT>
 class SafeHash
 {
 public:
+  SafeHash() : defaultValue(ValueT()) {}
+
   typedef tbb::concurrent_hash_map<KeyT, ValueT> InternalHashType;
 
   // hacky const access operator; returns default ValueT

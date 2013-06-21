@@ -22,11 +22,10 @@ void Model1::AlignRandomly()
     uniform_int_distribution<int> dist(0, sentence->tgt.size() - 1);
     for (size_t i = 0; i < sentence->src.size(); i++) {
       int tgtWord = dist(generator);
+      counts[sentence->tgt[tgtWord]]++;
       jointCounts[sentence->src[i]][sentence->tgt[tgtWord]]++;
       sentence->align.push_back(tgtWord);
     }
-    for (size_t i = 0; i < sentence->tgt.size(); i++)
-      counts[sentence->tgt[i]]++;
   }
 }
 
