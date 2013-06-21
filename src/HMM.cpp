@@ -98,7 +98,8 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
 
   float nullProb = 1 / (float)sentence->tgt.size();
   for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
-    dist.Add(log(jointCounts[sentence->src[srcPosition]][sentence->tgt[tgtPosition]] + alpha)
+    const CountHashType &jointCountsWord = jointCounts[sentence->src[srcPosition]];
+    dist.Add(log(jointCountsWord[sentence->tgt[tgtPosition]] + alpha)
       - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens()));
   }
 

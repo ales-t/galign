@@ -42,13 +42,16 @@ class SafeHash
 public:
   typedef tbb::concurrent_hash_map<KeyT, ValueT> InternalHashType;
 
-//  typedef std::pair<KeyT, ValueT> value_type;
-
+  // hacky const access operator; returns default ValueT
+  // if key is not in hash, but does not update the hash
   const ValueT &operator[](const KeyT &key) const
   {
     typename InternalHashType::const_accessor a;
-    internalHash.find(a, key);
-    return a->second;
+    if (internalHash.find(a, key)) {
+      return a->second;
+    } else {
+      return defaultValue;
+    }
   }
 
   ValueT &operator[](const KeyT &key)
@@ -81,6 +84,7 @@ public:
 
 private:
   InternalHashType internalHash;
+  ValueT defaultValue;
 };
 
 // crude, simple simulated annealing

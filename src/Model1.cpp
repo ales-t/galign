@@ -50,7 +50,8 @@ void Model1::RunIteration(float temp)
     // calculate distribution parameters
     LogDistribution lexicalProbs;
     BOOST_FOREACH(size_t tgt, sentence->tgt) {
-      float logProb = log(jointCounts[srcWord][tgt] + alpha)
+      const CountHashType &jointCountsWord = jointCounts[srcWord];
+      float logProb = log(jointCountsWord[tgt] + alpha)
         - log(counts[tgt] + alpha * corpus->GetTotalSourceTypes());
       lexicalProbs.Add(logProb);
     }
