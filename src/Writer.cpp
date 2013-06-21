@@ -21,7 +21,7 @@ void Writer::WriteAlignmentLine(OutStreamType &out, const WordSequenceType &src,
   for (size_t i = 0; i < src.size(); i++) {
     if (align[i] != 0) {
       if (mosesFormat) {
-        out << i << "-" << align[i];
+        out << i << "-" << align[i] - 1;
       } else {
         out << corpus->GetSrcWord(src[i]) << "{" << corpus->GetTgtWord(tgt[align[i]]) << "}";
       }

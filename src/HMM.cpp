@@ -9,10 +9,9 @@ using namespace std;
 using namespace boost;
 using namespace boost::random;
 
-HMM::HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
+HMM::HMM(Corpus *corpus, float alpha, const CountType &prevCounts,
     const JointCountType &prevJoint)
-: corpus(corpus), alpha(alpha), distAlpha(distAlpha), counts(prevCounts),
-  jointCounts(prevJoint)
+: corpus(corpus), alpha(alpha), counts(prevCounts), jointCounts(prevJoint)
 {
   distortionCounts.resize(2*BUCKET_LIMIT + 1);
   vector<Sentence *> &sentences = corpus->GetSentences();
@@ -96,11 +95,11 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
 {
   LogDistribution dist;
 
-  float nullProb = 1 / (float)sentence->tgt.size();
+  float nullProb = 0.2; //1 / (float)sentence->tgt.size();
   for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
     const CountHashType &jointCountsWord = jointCounts[sentence->src[srcPosition]];
     dist.Add(log(jointCountsWord[sentence->tgt[tgtPosition]] + alpha)
-      - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTokens()));
+      - log(counts[sentence->tgt[tgtPosition]] + alpha * corpus->GetTotalSourceTypes()));
   }
 
   LogDistribution transitionDist; 
@@ -109,7 +108,7 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
     vector<int> transitions = GetTransitions(sentence, srcPosition);
     float logProb = 0;
     BOOST_FOREACH(int t, transitions) {
-      logProb += log(distortionCounts[GetBucket(t)] + distAlpha);
+      logProb += log((float)distortionCounts[GetBucket(t)]);
     }
     transitionDist.Add(logProb);
   }

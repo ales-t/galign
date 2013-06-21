@@ -66,8 +66,8 @@ int main(int argc, char **argv)
 
   // HMM
   if (opts.GetHMMIterations() > 0) {
-    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetDistortionAlpha(),
-        model1.GetCounts(), model1.GetJointCounts());
+    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), model1.GetCounts(),
+        model1.GetJointCounts());
     lastModel = hmmModel;
     Log("Initialized HMM");
     Run(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), oldModel);

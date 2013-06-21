@@ -22,7 +22,6 @@ public:
   size_t GetHMMCoolingFrom()      { return hmmCoolingFrom; }
   size_t GetCores()               { return cores; }
   float GetLexicalAlpha()         { return alphaLex; }
-  float GetDistortionAlpha()      { return alphaDist; }
   std::string GetOutputFile()     { return outputFile; }
   std::string GetInputFile()      { return inputFile; }
   std::string GetLoadModelFile()  { return loadModelFile; }
@@ -35,7 +34,7 @@ private:
 
   size_t ibm1Iterations, ibm1CoolingFrom,
          hmmIterations, hmmCoolingFrom, cores;
-  float alphaLex, alphaDist;
+  float alphaLex;
   std::string inputFile, outputFile, loadModelFile, storeModelFile;
   bool help, mosesFormat;
 };

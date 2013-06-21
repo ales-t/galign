@@ -20,7 +20,7 @@ typedef std::vector<tbb::atomic<int> > DistortionCountType;
 class HMM : public AlignmentModel
 {
 public:
-  HMM(Corpus *corpus, float alpha, float distAlpha, const CountType &prevCounts,
+  HMM(Corpus *corpus, float alpha, const CountType &prevCounts,
       const JointCountType &prevJoint); 
   
   virtual void ReadModel(InStreamType &in)
@@ -62,7 +62,7 @@ private:
   SentenceMappingType order;
   boost::random::mt19937 generator;
   Corpus *corpus;
-  float alpha, distAlpha;
+  float alpha;
   CountType counts;
   JointCountType jointCounts; 
   DistortionCountType distortionCounts;

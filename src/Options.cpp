@@ -13,18 +13,16 @@ void Options::ParseOptions(int argc, char **argv)
   options_description opts("Allowed options");
 
   opts.add_options()
-    ("ibm1-cooling-from", value<size_t>(&ibm1CoolingFrom)->default_value(11),
+    ("ibm1-cooling-from", value<size_t>(&ibm1CoolingFrom)->default_value(15),
      "Iteration from which samples are aggregated for the final word alignment.")
     ("ibm1-iterations", value<size_t>(&ibm1Iterations)->default_value(20),
      "Number of iterations.")
-    ("hmm-cooling-from", value<size_t>(&hmmCoolingFrom)->default_value(40),
+    ("hmm-cooling-from", value<size_t>(&hmmCoolingFrom)->default_value(15),
      "Iteration from which samples are aggregated for the final word alignment.")
-    ("hmm-iterations", value<size_t>(&hmmIterations)->default_value(50),
+    ("hmm-iterations", value<size_t>(&hmmIterations)->default_value(20),
      "Number of iterations.")
     ("alpha-lex,a", value<float>(&alphaLex)->default_value(0.01),
      "Value of the uniform Dirichlet prior on lexical probability.")    
-    ("alpha-dist,a", value<float>(&alphaDist)->default_value(1),
-     "Value of the uniform Dirichlet prior on distortion probability.")    
     ("load-model-file", value<string>(&loadModelFile)->default_value(""),
      "Load an existing model file.")
     ("store-model-file", value<string>(&storeModelFile)->default_value(""),
