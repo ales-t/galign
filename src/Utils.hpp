@@ -78,6 +78,11 @@ public:
     internalHash.erase(a);    
   }
 
+  void Clear()
+  {
+    internalHash.clear();
+  }
+
   // used only for (de)serialization
   InternalHashType &Expose()
   {

@@ -28,8 +28,8 @@ public:
     // TODO some header
     counts = IterableReader<CountType>().Read(in);
     size_t size = ValueReader<size_t>().Read(in);
-    jointCounts.resize(size);
     for (size_t i = 0; i < size; i++) {
+      jointCounts[i].Clear();
       MapReader<CountHashType::InternalHashType,
         size_t, tbb::atomic<int> >().Read(in, jointCounts[i].Expose());
     }
