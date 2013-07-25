@@ -10,21 +10,14 @@ using namespace std;
 using namespace boost;
 using namespace boost::random;
 
-void Model1::AlignRandomly()
+void Model1::UpdateFromCorpus()
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
-    if (! sentence->align.empty())
-      Die("Attempted to overwrite existing alignment with random initialization");
-    sentence->align.reserve(sentence->src.size());
-
-    // align and collect counts
-    uniform_int_distribution<int> dist(0, sentence->tgt.size() - 1);
     for (size_t i = 0; i < sentence->src.size(); i++) {
-      int tgtWord = dist(generator);
-      counts[sentence->tgt[tgtWord]]++;
-      jointCounts[sentence->src[i]][sentence->tgt[tgtWord]]++;
-      sentence->align.push_back(tgtWord);
+      size_t tgtWord = sentence->tgt[sentence->align[i]];
+      counts[tgtWord]++;
+      jointCounts[sentence->src[i]][tgtWord]++;
     }
   }
 }

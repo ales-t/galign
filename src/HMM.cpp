@@ -9,18 +9,26 @@ using namespace std;
 using namespace boost;
 using namespace boost::random;
 
-HMM::HMM(Corpus *corpus, float alpha, const CountType &prevCounts,
-    const JointCountType &prevJoint)
-: corpus(corpus), alpha(alpha), counts(prevCounts), jointCounts(prevJoint)
+HMM::HMM(Corpus *corpus, float alpha, float nullProb)
+: corpus(corpus), alpha(alpha), nullProb(nullProb)
 {
   distortionCounts.resize(2*BUCKET_LIMIT + 1);
+  order = corpus->GetTokensToSentences();
+  counts.resize(corpus->GetTotalTargetTypes());
+  jointCounts.resize(corpus->GetTotalSourceTypes());
+}
+
+void HMM::UpdateFromCorpus()
+{
   vector<Sentence *> &sentences = corpus->GetSentences();
   BOOST_FOREACH(Sentence *sentence, sentences) {
     for (size_t i = 0; i < sentence->src.size(); i++) {
+      size_t tgtWord = sentence->tgt[sentence->align[i]];
+      counts[tgtWord]++;
+      jointCounts[sentence->src[i]][tgtWord]++;
       UpdateTransition(sentence, i, +1);
     }
   }
-  order = corpus->GetTokensToSentences();
 }
 
 void HMM::RunIteration(float temp)
@@ -95,7 +103,6 @@ std::vector<float> HMM::GetDistribution(Sentence *sentence, size_t srcPosition)
 {
   LogDistribution dist;
 
-  float nullProb = 0.2; //1 / (float)sentence->tgt.size();
   for (size_t tgtPosition = 0; tgtPosition < sentence->tgt.size(); tgtPosition++) {
     const CountHashType &jointCountsWord = jointCounts[sentence->src[srcPosition]];
     dist.Add(log(jointCountsWord[sentence->tgt[tgtPosition]] + alpha)

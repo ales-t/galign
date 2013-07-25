@@ -6,11 +6,13 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/random.hpp>
 
 using namespace std;
 using namespace boost;
 using namespace boost::iostreams;
 using namespace boost::algorithm;
+using namespace boost::random;
 
 void Corpus::Read(InStreamType &in)
 {
@@ -53,6 +55,20 @@ void Corpus::Read(InStreamType &in)
   close(in);
 }
 
+void Corpus::AlignRandomly()
+{
+  BOOST_FOREACH(Sentence *sentence, sentences) {
+    if (! sentence->align.empty())
+      Die("Attempted to overwrite existing alignment with random initialization");
+    sentence->align.reserve(sentence->src.size());
+
+    mt19937 generator;
+    uniform_int_distribution<int> dist(0, sentence->tgt.size() - 1);
+    for (size_t i = 0; i < sentence->src.size(); i++) {
+      sentence->align.push_back(dist(generator));
+    }
+  }
+}
 
 const std::string &Corpus::GetWord(IndexType &index, size_t wordIndex)
 {

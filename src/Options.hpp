@@ -16,10 +16,12 @@ public:
 
   bool GetHelp()                  { return help; }
   bool GetMosesFormat()           { return mosesFormat; }
+  bool GetForceAlign()            { return forceAlign; }
   size_t GetIBM1Iterations()      { return ibm1Iterations; }
   size_t GetIBM1CoolingFrom()     { return ibm1CoolingFrom; }
   size_t GetHMMIterations()       { return hmmIterations; }
   size_t GetHMMCoolingFrom()      { return hmmCoolingFrom; }
+  float GetHMMNullProb()          { return hmmNullProb; }
   size_t GetCores()               { return cores; }
   float GetLexicalAlpha()         { return alphaLex; }
   std::string GetOutputFile()     { return outputFile; }
@@ -34,9 +36,9 @@ private:
 
   size_t ibm1Iterations, ibm1CoolingFrom,
          hmmIterations, hmmCoolingFrom, cores;
-  float alphaLex;
+  float alphaLex, hmmNullProb;
   std::string inputFile, outputFile, loadModelFile, storeModelFile;
-  bool help, mosesFormat;
+  bool help, mosesFormat, forceAlign;
 };
 
 #endif // OPTIONS_HPP_

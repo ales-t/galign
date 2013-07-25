@@ -58,6 +58,9 @@ public:
   // run one iteration of Gibbs sampling over the corpus
   virtual void RunIteration(float temp);
 
+  // add counts from aligned corpus
+  virtual void UpdateFromCorpus();
+
   // get counts and joint counts, used as initial parameters by
   // subsequent models
   const CountType &GetCounts()           { return counts; }

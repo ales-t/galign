@@ -16,16 +16,22 @@
 
 using namespace std;
 
-void Run(AlignmentModel &model, int iterations, int coolingFrom, InStreamType *oldModel)
+void RunModel(AlignmentModel &model, int iterations, int coolingFrom,
+     InStreamType *oldModel, bool force)
 {
   if (oldModel) {
     model.ReadModel(*oldModel);
     close(*oldModel);
   }
-  Annealer annealer(iterations, coolingFrom);
-  for (int i = 1; i <= iterations; i++) {
-    model.RunIteration(annealer.GetTemp(i));
-    Log("Finished iteration " + boost::lexical_cast<string>(i));
+  if (force) {
+    Log("Asked for forced alignment, skipping training");
+  } else {
+    model.UpdateFromCorpus();
+    Annealer annealer(iterations, coolingFrom);
+    for (int i = 1; i <= iterations; i++) {
+      model.RunIteration(annealer.GetTemp(i));
+      Log("Finished iteration " + boost::lexical_cast<string>(i));
+    }
   }
 }
 
@@ -40,7 +46,11 @@ int main(int argc, char **argv)
   }
   omp_set_num_threads(cores);
   Log("Using " + boost::lexical_cast<string>(cores) + " CPU cores");
+  if (opts.GetForceAlign() && opts.GetLoadModelFile().empty()) {
+    Die("Asking for forced alignment but no existing model given");
+  }
 
+  // load corpus
   InStreamType *oldModel = NULL;
   Corpus *corpus;
   if (! opts.GetLoadModelFile().empty()) {
@@ -51,38 +61,42 @@ int main(int argc, char **argv)
   }
   Log("Corpus loaded.");
 
-  // IBM Model 1
-  Model1 model1(corpus, opts.GetLexicalAlpha());
-  model1.AlignRandomly();
-  AlignmentModel *lastModel = &model1;
-  Log("Initialized Model1");
+  AlignmentModel *lastModel = NULL;
+
+  // IBM model 1
   if (opts.GetIBM1Iterations() > 0) {
+    Model1 *model1 = new Model1(corpus, opts.GetLexicalAlpha());
+    lastModel = model1;
     if (oldModel && opts.GetHMMIterations() > 0) {
       Warn("Will load existing model, skipping IBM1 training.");
     } else {
-      Run(model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), oldModel);
+      RunModel(*model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), oldModel, opts.GetForceAlign());
     }
   }
 
   // HMM
   if (opts.GetHMMIterations() > 0) {
-    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), model1.GetCounts(),
-        model1.GetJointCounts());
+    HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetHMMNullProb());
     lastModel = hmmModel;
     Log("Initialized HMM");
-    Run(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), oldModel);
+    RunModel(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), oldModel, opts.GetForceAlign());
   }
-
+  
   // optionally store trained model
   string modelFile = opts.GetStoreModelFile();
   if (! modelFile.empty()) {
+    Log("Writing model file");
     OutStreamType *out = InitOutput(modelFile);
     corpus->WriteIndex(*out);
     lastModel->WriteModel(*out);
     close(*out);
   }
-
-  // output last alignment and aggregate alignment
+  
+  // calculate Viterbi alignment
+  Log("Computing Viterbi alignments");
+  lastModel->Viterbi();
+ 
+  // output final word alignment
   Log("Writing alignments.");  
   Writer writer(corpus);
   writer.WriteAlignment(opts.GetOutputFile(), opts.GetMosesFormat());

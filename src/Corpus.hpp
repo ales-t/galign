@@ -34,6 +34,7 @@ public:
   Corpus(const std::string &fileName)
   {
     Read(*InitInput(fileName));
+    AlignRandomly();
   }
 
   // loads word index from inStream and calls the standard ctor
@@ -42,7 +43,11 @@ public:
     MapReader<IndexType, std::string, size_t>().Read(inStream, srcIndex);
     MapReader<IndexType, std::string, size_t>().Read(inStream, tgtIndex);
     Read(*InitInput(fileName));
+    AlignRandomly();
   }
+
+  // random alignment
+  void AlignRandomly();
 
   // get the corpus; not const as models write the alignment directly in the corpus
   std::vector<Sentence *> &GetSentences() { return sentences; }

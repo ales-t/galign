@@ -9,14 +9,12 @@
 #include "Utils.hpp"
 
 // output final word alignment
-// TODO output a model file
 class Writer
 {
 public:
   Writer(Corpus *corpus) : corpus(corpus) {}
 
   // this variant outputs the alignment currently in the corpus object
-  // (i.e. the last Gibbs sample)
   void WriteAlignment(const std::string &fileName, bool mosesFormat = false);
 
 private:
