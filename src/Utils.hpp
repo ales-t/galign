@@ -34,8 +34,7 @@ inline void Die(const std::string &msg)
 }
 
 // a thin wrapper around TBB concurrent hash
-// implements [] operator (behaves the same way as in std::map),
-// simple querying of existence and deletion
+// implements [] operator, simple querying of existence and deletion
 template <typename KeyT, typename ValueT>
 class SafeHash
 {
