@@ -5,6 +5,7 @@
 #include <boost/random.hpp>
 #include <boost/foreach.hpp>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 using namespace boost;
@@ -20,6 +21,31 @@ void Model1::UpdateFromCorpus()
       jointCounts[sentence->src[i]][tgtWord]++;
     }
   }
+}
+
+void Model1::Viterbi()
+{
+  vector<Sentence *> &sentences = corpus->GetSentences();
+  BOOST_FOREACH(Sentence *sentence, sentences) {
+    for (size_t i = 0; i < sentence->src.size(); i++) {
+      vector<float> dist = GetDistribution(sentence, i);
+      sentence->align[i] = distance(dist.begin(), max_element(dist.begin(), dist.end()));
+    }
+  }
+}
+
+std::vector<float> Model1::GetDistribution(const Sentence *sentence, size_t srcPosition)
+{
+  LogDistribution lexicalProbs;
+  size_t srcWord = sentence->src[srcPosition];
+  BOOST_FOREACH(size_t tgt, sentence->tgt) {
+    const CountHashType &jointCountsWord = jointCounts[srcWord];
+    float logProb = log(jointCountsWord[tgt] + alpha)
+      - log(counts[tgt] + alpha * corpus->GetTotalSourceTypes());
+    lexicalProbs.Add(logProb);
+  }
+  lexicalProbs.Normalize();
+  return lexicalProbs.Exp();
 }
 
 void Model1::RunIteration(float temp)
@@ -40,15 +66,7 @@ void Model1::RunIteration(float temp)
     counts[oldTgtWord]--;
 
     // calculate distribution parameters
-    LogDistribution lexicalProbs;
-    BOOST_FOREACH(size_t tgt, sentence->tgt) {
-      const CountHashType &jointCountsWord = jointCounts[srcWord];
-      float logProb = log(jointCountsWord[tgt] + alpha)
-        - log(counts[tgt] + alpha * corpus->GetTotalSourceTypes());
-      lexicalProbs.Add(logProb);
-    }
-    lexicalProbs.Normalize();
-    vector<float> distParams = lexicalProbs.Exp();
+    vector<float> distParams = GetDistribution(sentence, sentPos.second);
     Annealer::Anneal(temp, distParams.begin(), distParams.end());
 
     // generate a sample

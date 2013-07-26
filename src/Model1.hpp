@@ -61,6 +61,9 @@ public:
   // add counts from aligned corpus
   virtual void UpdateFromCorpus();
 
+  std::vector<float> GetDistribution(const Sentence *sentence, size_t srcPosition);
+  void Viterbi();
+
   // get counts and joint counts, used as initial parameters by
   // subsequent models
   const CountType &GetCounts()           { return counts; }
