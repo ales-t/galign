@@ -35,6 +35,11 @@ void RunModel(AlignmentModel &model, int iterations, int coolingFrom,
   }
 }
 
+// modes:
+// - train, align (+ dump models)
+// - load models, continue training, align (+dump updated models)
+// - load models, force align, don't train
+
 int main(int argc, char **argv)
 {
   // parse options

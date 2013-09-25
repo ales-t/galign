@@ -47,6 +47,7 @@ public:
 
   virtual void RunIteration(float temp);
   virtual void UpdateFromCorpus();
+  virtual void Viterbi();
 
 private:
   std::vector<float> GetDistribution(Sentence *sentence, size_t srcPosition);

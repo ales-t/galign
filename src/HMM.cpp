@@ -4,6 +4,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/random.hpp>
 #include <boost/foreach.hpp>
+#include <algorithm>
+#include <iterator>
+#include <stack>
 
 using namespace std;
 using namespace boost;
@@ -62,6 +65,61 @@ void HMM::RunIteration(float temp)
     counts[sentence->tgt[sample]]++;
 
     UpdateTransition(sentence, srcPos, +1);
+  }
+}
+
+void HMM::Viterbi()
+{
+  vector<Sentence *> &sentences = corpus->GetSentences();
+  BOOST_FOREACH(Sentence *sentence, sentences) {
+    size_t paths[sentence->src.size()][sentence->tgt.size()]; // to reconstruct best path
+    // probs of hidden states at previous position
+    vector<float> probs = GetDistribution(sentence, 0.0);
+    for (size_t i = 0; i < sentence->tgt.size(); i++)
+      probs[i] = log(probs[i]);
+
+
+    // over words in the source (i.e. observed states)
+    for (size_t srcPos = 1; srcPos < sentence->src.size(); srcPos++) {
+      vector<float> newProbs(sentence->tgt.size(), 0.0); // best probs of hidden states at current position
+
+      // over possible previous hidden states
+      for (size_t prevTgtPos = 0; prevTgtPos < sentence->tgt.size(); prevTgtPos++) {
+        sentence->align[srcPos - 1] = prevTgtPos; // to get correct transition prob
+        
+        // get probs of all current hidden states given the observed state and previous hidden state
+        vector<float> distParams = GetDistribution(sentence, srcPos);
+
+        // is prevTgtPos the best predecessor for tgtPos?
+        for (size_t tgtPos = 0; tgtPos < sentence->tgt.size(); tgtPos++) {
+          if (distParams[tgtPos] > newProbs[tgtPos]) {
+            newProbs[tgtPos] = distParams[tgtPos];
+            paths[srcPos][tgtPos] = prevTgtPos;
+          }
+        }
+      }
+
+      for (size_t i = 0; i < sentence->tgt.size(); i++) 
+        probs[i] += log(newProbs[i]);
+    }
+
+    // reconstruct best path
+    stack<size_t> bestPath;
+
+    // start in the most probable final hidden state
+    size_t tgtPos = distance(probs.begin(), max_element(probs.begin(), probs.end()));
+
+    for (size_t i = sentence->src.size(); i--;) {
+      bestPath.push(tgtPos);
+      tgtPos = paths[i][tgtPos];
+    }
+    
+    for (size_t i = 0; i < sentence->src.size(); i++) {
+      sentence->align[i] = bestPath.top();
+//      cerr << bestPath.top() << " ";
+      bestPath.pop();
+    }
+//    cerr << endl;
   }
 }
 
