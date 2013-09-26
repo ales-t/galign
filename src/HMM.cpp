@@ -75,9 +75,7 @@ void HMM::Viterbi()
     size_t paths[sentence->src.size()][sentence->tgt.size()]; // to reconstruct best path
     // probs of hidden states at previous position
     vector<float> probs = GetDistribution(sentence, 0.0);
-    for (size_t i = 0; i < sentence->tgt.size(); i++)
-      probs[i] = log(probs[i]);
-
+    for_each(probs.begin(), probs.end(), ::log);
 
     // over words in the source (i.e. observed states)
     for (size_t srcPos = 1; srcPos < sentence->src.size(); srcPos++) {
