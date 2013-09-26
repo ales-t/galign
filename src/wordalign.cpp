@@ -98,8 +98,10 @@ int main(int argc, char **argv)
   }
   
   // calculate Viterbi alignment
-  Log("Computing Viterbi alignments");
-  lastModel->Viterbi();
+  if (opts.GetDoViterbi()) {
+    Log("Computing Viterbi alignments");
+    lastModel->Viterbi();
+  }
  
   // output final word alignment
   Log("Writing alignments.");  

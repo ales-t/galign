@@ -17,6 +17,7 @@ public:
   bool GetHelp()                  { return help; }
   bool GetMosesFormat()           { return mosesFormat; }
   bool GetForceAlign()            { return forceAlign; }
+  bool GetDoViterbi()             { return ! noViterbi; }
   size_t GetIBM1Iterations()      { return ibm1Iterations; }
   size_t GetIBM1CoolingFrom()     { return ibm1CoolingFrom; }
   size_t GetHMMIterations()       { return hmmIterations; }
@@ -38,7 +39,7 @@ private:
          hmmIterations, hmmCoolingFrom, cores;
   float alphaLex, hmmNullProb;
   std::string inputFile, outputFile, loadModelFile, storeModelFile;
-  bool help, mosesFormat, forceAlign;
+  bool help, mosesFormat, forceAlign, noViterbi;
 };
 
 #endif // OPTIONS_HPP_
