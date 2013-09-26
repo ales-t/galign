@@ -12,6 +12,8 @@ using namespace std;
 using namespace boost;
 using namespace boost::random;
 
+const float LOGZERO = -1000000;
+
 HMM::HMM(Corpus *corpus, float alpha, float nullProb)
 : corpus(corpus), alpha(alpha), nullProb(nullProb)
 {
@@ -71,7 +73,9 @@ void HMM::RunIteration(float temp)
 void HMM::Viterbi()
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
-  BOOST_FOREACH(Sentence *sentence, sentences) {
+  #pragma omp parallel for
+  for (size_t sentPos = 0; sentPos < sentences.size(); sentPos++) {
+    Sentence *sentence = sentences[sentPos];
     size_t paths[sentence->src.size()][sentence->tgt.size()]; // to reconstruct best path
     // probs of hidden states at previous position
     vector<float> probs = GetDistribution(sentence, 0.0);
@@ -79,7 +83,7 @@ void HMM::Viterbi()
 
     // over words in the source (i.e. observed states)
     for (size_t srcPos = 1; srcPos < sentence->src.size(); srcPos++) {
-      vector<float> newProbs(sentence->tgt.size(), 0.0); // best probs of hidden states at current position
+      vector<float> newProbs(sentence->tgt.size(), LOGZERO); // best probs of hidden states at current position
 
       // over possible previous hidden states
       for (size_t prevTgtPos = 0; prevTgtPos < sentence->tgt.size(); prevTgtPos++) {
@@ -90,15 +94,14 @@ void HMM::Viterbi()
 
         // is prevTgtPos the best predecessor for tgtPos?
         for (size_t tgtPos = 0; tgtPos < sentence->tgt.size(); tgtPos++) {
-          if (distParams[tgtPos] > newProbs[tgtPos]) {
-            newProbs[tgtPos] = distParams[tgtPos];
+          if (log(distParams[tgtPos]) + probs[prevTgtPos] > newProbs[tgtPos]) {
+            newProbs[tgtPos] = log(distParams[tgtPos]) + probs[prevTgtPos];
             paths[srcPos][tgtPos] = prevTgtPos;
           }
         }
       }
 
-      for (size_t i = 0; i < sentence->tgt.size(); i++) 
-        probs[i] += log(newProbs[i]);
+      probs = newProbs;
     }
 
     // reconstruct best path

@@ -26,7 +26,9 @@ void Model1::UpdateFromCorpus()
 void Model1::Viterbi()
 {
   vector<Sentence *> &sentences = corpus->GetSentences();
-  BOOST_FOREACH(Sentence *sentence, sentences) {
+  #pragma omp parallel for
+  for (size_t sentPos = 0; sentPos < sentences.size(); sentPos++) {
+    Sentence *sentence = sentences[sentPos];
     for (size_t i = 0; i < sentence->src.size(); i++) {
       vector<float> dist = GetDistribution(sentence, i);
       sentence->align[i] = distance(dist.begin(), max_element(dist.begin(), dist.end()));
