@@ -79,4 +79,4 @@ Author: Aleš Tamchyna <tamchyna -at- ufal.mff.cuni.cz>
 Copyright © 2013 Institute of Formal and Applied Linguistics,
    Charles University in Prague.
 
-Licensed under the GNU Lesser General Public Licence version 2.1.
+Licensed under the GNU Lesser General Public License version 2.1.
