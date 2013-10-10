@@ -36,6 +36,19 @@ void Model1::Viterbi()
   }
 }
 
+void Model1::BoostIdentical(size_t boost)
+{
+  size_t totalSrcTypes = corpus->GetTotalSourceTypes();
+  for (size_t i = 0; i < totalSrcTypes; i++) {
+    const string &srcWord = corpus->GetSrcWord(i);
+    if (corpus->TgtExists(srcWord)) {
+      size_t tgtIndex = corpus->GetTgtIndex(srcWord);
+      jointCounts[i][tgtIndex] += boost;
+      counts[tgtIndex] += boost;
+    }
+  }
+}
+
 std::vector<float> Model1::GetDistribution(const Sentence *sentence, size_t srcPosition)
 {
   LogDistribution lexicalProbs;

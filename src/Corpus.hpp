@@ -68,6 +68,17 @@ public:
   size_t GetSrcIndex(const std::string &word) { return GetIndex(srcIndex, word); }
   size_t GetTgtIndex(const std::string &word) { return GetIndex(tgtIndex, word); }
 
+  // quickly written helper methods used in BoostIdentical
+  bool SrcExists(const std::string &word)
+  {    
+    return srcIndex.left.find(word) != srcIndex.left.end();
+  }
+
+  bool TgtExists(const std::string &word)
+  {    
+    return tgtIndex.left.find(word) != tgtIndex.left.end();
+  }
+
   // write word index into outStream
   void WriteIndex(OutStreamType &outStream)
   {

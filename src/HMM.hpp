@@ -47,6 +47,7 @@ public:
 
   virtual void RunIteration(float temp);
   virtual void UpdateFromCorpus();
+  virtual void BoostIdentical(size_t boost);
   virtual void Viterbi();
 
 private:

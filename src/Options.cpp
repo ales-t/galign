@@ -42,6 +42,8 @@ void Options::ParseOptions(int argc, char **argv)
      "Save the final model file.")
     ("cores", value<size_t>(&cores)->default_value(0),
      "The number of CPU cores to use, default 0 means autodetect.")
+    ("boost-identical", value<size_t>(&cores)->default_value(0),
+     "Add N artificial occurrences to word being aligned to itself, useful for monolingual alignment.")
     ("help,h", value<bool>(&help)->zero_tokens()->default_value(false),
      "Print this message.");
   try {

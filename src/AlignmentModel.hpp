@@ -10,6 +10,7 @@ class AlignmentModel
 public:
   virtual void RunIteration(float temp) = 0;
   virtual void UpdateFromCorpus() = 0;
+  virtual void BoostIdentical(size_t boost) = 0;
   virtual void Viterbi() = 0;
   virtual void ReadModel(InStreamType &inStream) = 0;
   virtual void WriteModel(OutStreamType &outStream) = 0;

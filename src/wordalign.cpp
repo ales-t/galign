@@ -17,7 +17,7 @@
 using namespace std;
 
 void RunModel(AlignmentModel &model, int iterations, int coolingFrom,
-     InStreamType *oldModel, bool force)
+     InStreamType *oldModel, bool force, size_t boostIdentical)
 {
   if (oldModel) {
     model.ReadModel(*oldModel);
@@ -27,6 +27,9 @@ void RunModel(AlignmentModel &model, int iterations, int coolingFrom,
     Log("Asked for forced alignment, skipping training");
   } else {
     model.UpdateFromCorpus();
+    if (boostIdentical > 0)
+      model.BoostIdentical(boostIdentical);
+
     Annealer annealer(iterations, coolingFrom);
     for (int i = 1; i <= iterations; i++) {
       model.RunIteration(annealer.GetTemp(i));
@@ -75,7 +78,8 @@ int main(int argc, char **argv)
     if (oldModel && opts.GetHMMIterations() > 0) {
       Warn("Will load existing model, skipping IBM1 training.");
     } else {
-      RunModel(*model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(), oldModel, opts.GetForceAlign());
+      RunModel(*model1, opts.GetIBM1Iterations(), opts.GetIBM1CoolingFrom(),
+          oldModel, opts.GetForceAlign(), opts.GetBoostIdentical());
     }
   }
 
@@ -84,7 +88,8 @@ int main(int argc, char **argv)
     HMM *hmmModel = new HMM(corpus, opts.GetLexicalAlpha(), opts.GetHMMNullProb());
     lastModel = hmmModel;
     Log("Initialized HMM");
-    RunModel(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(), oldModel, opts.GetForceAlign());
+    RunModel(*hmmModel, opts.GetHMMIterations(), opts.GetHMMCoolingFrom(),
+        oldModel, opts.GetForceAlign(), opts.GetBoostIdentical());
   }
   
   // optionally store trained model

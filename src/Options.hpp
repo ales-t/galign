@@ -23,6 +23,7 @@ public:
   size_t GetHMMIterations()       { return hmmIterations; }
   size_t GetHMMCoolingFrom()      { return hmmCoolingFrom; }
   float GetHMMNullProb()          { return hmmNullProb; }
+  size_t GetBoostIdentical()      { return boostIdentical; }
   size_t GetCores()               { return cores; }
   float GetLexicalAlpha()         { return alphaLex; }
   std::string GetOutputFile()     { return outputFile; }
@@ -36,7 +37,7 @@ private:
   Options &operator=(Options const &);
 
   size_t ibm1Iterations, ibm1CoolingFrom,
-         hmmIterations, hmmCoolingFrom, cores;
+         hmmIterations, hmmCoolingFrom, cores, boostIdentical;
   float alphaLex, hmmNullProb;
   std::string inputFile, outputFile, loadModelFile, storeModelFile;
   bool help, mosesFormat, forceAlign, noViterbi;
